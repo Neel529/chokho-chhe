@@ -1,0 +1,757 @@
+/* ============================================================
+   HOMEPAGE — HERO — spec section 3
+   Status: structure frozen, video/copy/CTA open.
+   ============================================================ */
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--header-height-mobile) var(--space-4) var(--space-6);
+  overflow: hidden;
+  color: var(--color-parchment);
+}
+@media (min-width: 768px) {
+  .hero { padding: var(--header-height) var(--space-6) var(--space-7); }
+}
+
+.hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* Doubles as today's poster fallback — a real <video> sits on top of
+     this (see .hero__video below) but has no <source> yet, so it paints
+     nothing and this texture + the label below show through. Once real
+     footage exists, an actual poster frame can replace this, or it can
+     stay as the pre-canplay fallback. */
+  background:
+    repeating-linear-gradient(135deg, color-mix(in srgb, var(--color-teal) 92%, black) 0 2px, var(--color-teal) 2px 28px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Feathered bottom edge — MOVED here from .hero__video alone (2026-09-14,
+     sixth pass — "mask the whole box, not just the video" round). See the
+     big comment on .hero__video below for why the previous (fifth) pass's
+     video-only mask still left a real, screenshot-confirmed seam across
+     roughly the first 60% of the scroll range: masking only the video let
+     the video fade to transparent at the edge, but this box's OWN teal
+     placeholder texture, and .hero__dissolve's own flat, unmasked colour
+     wash sitting on top of it, were both still fully opaque right up to
+     the same hard edge — and neither reliably equals the target field
+     colour until .hero__dissolve's own opacity tween finishes (~60% of
+     the scroll range, main.js), while .desire is already visibly peeking
+     in from almost the very start (progress > 0). Masking THIS element —
+     which contains the video, the texture, AND .hero__dissolve as a
+     child, see index.html — fades the whole stack to transparent at the
+     edge together, revealing `body`'s own background directly at the
+     boundary row. `body` and `.desire` read the exact same
+     --dissolve-field-color (see file header comment) — so this is an
+     EXACT match by construction, at every scroll position, independent
+     of how far any individual tween has progressed. -webkit- prefix
+     required for Safari/iOS, same reasoning as before. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 65%, transparent 100%);
+}
+.hero__video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* crop handling — fills the hero regardless of the source's native aspect ratio */
+}
+.hero__media::after {
+  /* readability scrim, sits above the placeholder texture / future video */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 45%, rgba(0,0,0,0.25) 100%);
+}
+.hero__media-label {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  letter-spacing: 0.08em;
+  max-width: 22em;
+  line-height: 1.6;
+}
+/* Persistent corner tag for the mock hero footage (2026-09-10) — stays up
+   the whole time the mock clip plays, unlike .hero__media-label above
+   (which only shows if the video never starts). Sits below the fixed
+   header strip so it never overlaps the trigger/cart icons, and away
+   from .hero__content (bottom-weighted) so it never sits over the copy
+   this drop-in exists to test the legibility of. Delete this element
+   when real footage replaces the mock <source> — it is not meant to
+   survive that swap. */
+.hero__mock-badge {
+  position: absolute;
+  top: calc(var(--header-height-mobile) + var(--space-3));
+  right: var(--space-4);
+  z-index: 2;
+  font-size: 0.625rem;
+}
+@media (min-width: 768px) {
+  .hero__mock-badge {
+    top: calc(var(--header-height) + var(--space-3));
+    right: var(--space-6);
+  }
+}
+
+.hero__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  /* align-items default (stretch), not flex-start: the children are
+     text blocks that already read left-aligned regardless of their own
+     box width, but .hero__actions specifically needs to actually SPAN
+     the full content column so `width: 100%` on .hero__cta means
+     something real — flex-start would shrink-wrap every child
+     (including .hero__actions) to its own content width, which is
+     exactly what broke the mobile full-width CTA the first time this
+     was tried (verified: computed width matched the button's intrinsic
+     content size on both mobile and desktop, not the content column). */
+  gap: var(--space-5);
+}
+
+/* Hindi block — the emotional lead. Devanagari at hero scale (the
+   biggest text in the section, on purpose — spec: "the emotional lead"),
+   transliteration small and quiet directly beneath it, tightly paired
+   (small internal gap) so the two read as one unit, not two separate
+   lines. line-height is looser than the Latin type elsewhere in this
+   file — Devanagari matras/vowel signs need more vertical room than
+   Latin ascenders/descenders, tight line-height here would clip them. */
+.hero__hindi { display: flex; flex-direction: column; gap: var(--space-1); }
+.hero__devanagari {
+  font-family: var(--font-devanagari);
+  font-size: var(--fs-hero);
+  line-height: 1.35;
+}
+.hero__translit {
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  font-style: italic;
+  letter-spacing: 0.02em;
+  opacity: 0.75;
+}
+
+/* English block removed 2026-09-10 (Nilesh): the hero had four lines all
+   saying the same thing. Trimmed to the Devanagari lead + a quiet
+   lowercase gloss for non-Devanagari readers, then the CTA — nothing
+   else. .hero__english / .hero__statement / .hero__aside and their copy
+   ("No guesswork, nothing new" / "(That's the point)") are gone, not
+   parked. */
+
+.hero__actions { display: flex; align-items: center; gap: var(--space-4); }
+
+/* CTA width (Nilesh, 2026-09-08): full-width on mobile (spans the
+   content column), contained/content-width on desktop. Both
+   .btn__shadow (already `inset: 0` against .hero__cta's own box) and
+   .btn__face need to agree on that box's width — this is exactly the
+   mismatch bug from the cart-drawer checkout button (build-log.md,
+   Session 21): if only one of the two stretches, the offset outline
+   and the filled face end up different sizes. Pill shape and press
+   effect themselves are untouched — this only changes how wide the
+   button's box is, not its shape or motion. */
+.hero__cta.btn { display: block; width: 100%; }
+.hero__cta .btn__face { width: 100%; }
+@media (min-width: 768px) {
+  .hero__cta.btn { display: inline-block; width: auto; }
+  .hero__cta .btn__face { width: auto; }
+}
+
+/* ============================================================
+   HOMEPAGE — HERO -> DESIRE TRANSITION (2026-09-13, fifth pass —
+   "feather the edge itself" round)
+   Fixes the hard cut Nilesh flagged between the cinematic hero and
+   Section 2's flat, bright ground ("a golden-lit room, then someone
+   switches on a tubelight"). Four earlier passes this same day, all
+   logged in build-log.md for the record — short version: Pass 1's
+   colours could mismatch outright (Version B); Pass 2 made them
+   pixel-identical via a shared --dissolve-field-color custom property
+   but a hard line still showed; Pass 3 found and fixed the video's own
+   clipped-edge silhouette (added a video-opacity fade), fixing the
+   RESTING state but leaving a seam mid-scroll (Section 2's colour is
+   already "finished" the instant any of it is visible, while the hero's
+   tail is still mid-tween); Pass 4 pinned .hero so the dissolve was
+   structurally forced to finish before Section 2 could appear at all —
+   verified working exactly as designed, but Nilesh's read was that a
+   hard line was STILL visible at every scroll depth, because pinning
+   only controlled WHEN a still-sharp-edged shape could reach the screen,
+   it never made the shape itself soft.
+
+   Fifth pass fixed this at (what was believed to be) the source:
+   `.hero__video` carried a permanent CSS mask — a gradient down its
+   lower portion fading from fully opaque to fully transparent at the
+   very bottom edge, so the video's own silhouette would never be a hard
+   rectangle. The pin was REMOVED in that same pass — back to a plain,
+   direct scroll mapping (10% scrolled = 10% dissolved,
+   `initHeroDesireTransition()`, main.js) rather than a held/frozen hero,
+   per Nilesh's explicit direction that round. `body` reading
+   --dissolve-field-color as its own background (css/base.css), with
+   .desire staying transparent (below) rather than painting a second,
+   separately-sourced rectangle, is unchanged since Pass 2 and still
+   part of the fix.
+
+   SIXTH PASS (2026-09-14, product-jar round) — masking only the video
+   turned out not to be enough. Screenshot-verified (not assumed): a real
+   seam was still visible at the hero/Section-2 boundary across roughly
+   the first 60% of the scroll range on BOTH breakpoints, mid-scroll
+   (e.g. progress ~50%). Root cause: the video's mask made the VIDEO
+   fade to transparent at the edge correctly, but two OTHER things sat
+   underneath it at that same edge, neither masked: .hero__media's own
+   teal placeholder texture, and .hero__dissolve's flat colour wash —
+   and .hero__dissolve doesn't reach full (matching) opacity until ~60%
+   of the scroll range (main.js), while .desire is already visibly
+   peeking in from almost the very start (progress > 0, not later) —
+   the exact Pass-3 mismatch, reintroduced by removing Pass 4's pin
+   without anything else closing that same gap.
+   Fixed by moving the mask from `.hero__video` to `.hero__media` (the
+   parent box that actually contains video + texture + .hero__dissolve
+   as children, see index.html) — now the WHOLE stack fades to
+   transparent together at the edge, revealing `body`'s own background
+   directly at the boundary row. Since `body` and `.desire` read the
+   exact same --dissolve-field-color, that boundary-row match is now
+   EXACT by construction at every scroll position, independent of any
+   individual tween's progress — not something that can drift out of
+   sync again the way the Pass-3/Pass-5 versions could. Re-verified via
+   Playwright screenshots at the same mid-scroll points that showed the
+   bug — clean at every one, both breakpoints (both colour versions,
+   at the time — see below, now just the one).
+
+   DECIDED 2026-09-15 (Nilesh: "parchment wins") — PARCHMENT, single
+   version. This section originally shipped two live-toggleable dissolve
+   targets (A. Parchment, B. Deep Teal) for comparison; the Deep Teal
+   option, its `html[data-hero-dissolve="teal"]` override, and the whole
+   `.transition-ab-toggle` review control are REMOVED outright this
+   round, not disabled — see build-log.md Session 42. Deep Teal itself
+   (`--color-teal`) is untouched as a brand colour — it's still used
+   elsewhere sitewide (entry screen, header, hero's placeholder texture,
+   page-transition curtain) — only its use AS A DISSOLVE-FIELD OPTION
+   for this section is gone.
+
+   --dissolve-field-color/--desire-fg/--desire-fg-opacity are DEFINED in
+   css/variables.css (sitewide defaults), not here — see that file's
+   comment for why (body's background needs a safe default on every
+   page) — kept as named tokens rather than inlining `--color-parchment`
+   directly in both places, even with only one version now: that
+   indirection is what makes body's background and this section's own
+   field colour provably the same value by construction, which is the
+   actual fix behind the "no seam" work (Session 38 Pass 2) — collapsing
+   it back to two independently-hardcoded values would quietly reopen
+   the exact risk that pass closed, for no benefit now that there's only
+   one option to pick from anyway.
+   (--desire-accent, the former grandparent-anchor's accent colour, was
+   removed 2026-09-14 along with that feature — see build-log.md Session
+   40 — no longer defined or overridden anywhere.) */
+
+/* Stacking: above .hero__video and its ::after readability scrim, below
+   .hero__content (Devanagari line + CTA) — the copy/CTA scroll off on top
+   of the dissolving footage completely untouched, exactly as specified.
+   Still needed even with body now providing the base field (see the file
+   header comment) — this is what visually covers the video/placeholder-
+   texture/scrim stack while the video is fading, not the field colour's
+   source of truth. */
+.hero__dissolve {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--dissolve-field-color);
+  opacity: 0; /* driven by main.js, scrubbed to scroll position */
+  pointer-events: none;
+}
+.hero__video {
+  will-change: filter, opacity; /* both scroll-scrubbed, see main.js */
+  /* The feathered-edge mask that used to live HERE (Pass 5) is now on the
+     parent, .hero__media above — moved there this pass (sixth), not
+     duplicated: masking only the video left .hero__media's own texture
+     and .hero__dissolve (both unmasked, both children of .hero__media)
+     still hard-edged underneath it — see .hero__media's comment for the
+     full root-cause and why masking the whole box fixes it structurally.
+     65%/100% split is a build-time starting value, carried over
+     unchanged — a taller feather (lower first stop) reads softer but
+     eats into how much is crisply visible — retune freely on the
+     .hero__media rule now, not here. */
+}
+
+/* ============================================================
+   HOMEPAGE — DESIRE BEAT — homepage section 2 (rebuilt, 2026-09-12)
+   Not yet reflected in Ckc_website_master_specification.md — concept
+   given directly by Nilesh. This round replaced the opacity crossfade
+   with a word-level rising-mask "reel" shuffle — see the reference
+   technique in .paradox__line .word below (same .word/overflow:hidden +
+   inner-span/yPercent primitive, used bidirectionally here). Full
+   mechanic lives in initDesireBeat() (main.js); this file only holds
+   the masking/layout CSS the mechanic depends on.
+
+   Deliberately still on SCROLL: no [data-reveal], no ScrollTrigger
+   anywhere in this section — the only motion is the shuffle itself
+   (auto every 3s as of 2026-09-15 — was 5s, see main.js
+   AUTO_INTERVAL_MS — or manual).
+
+   COMPOSITION — superseded 2026-09-14: this section originally shipped
+   asymmetric/left-weighted with no imagery (CLAUDE.md quality-bar
+   reasoning, round 4 — vary section rhythm, avoid Paradox's centred
+   mega-type right after it). Nilesh's direct instruction this round
+   replaced that with a centered column topped by a product jar (see
+   the DESIRE BEAT — product jar anchor block further down) — a direct
+   instruction supersedes a build-time quality-bar call, not silently;
+   flagged here so this paragraph doesn't contradict `.desire` below it.
+   ============================================================ */
+
+.desire {
+  min-height: 100svh;
+  display: flex;
+  /* HORIZONTALLY centered — changed 2026-09-14, Nilesh's direct
+     instruction for the product-jar round, overriding this section's
+     earlier "asymmetric, left-weighted" composition (that was a build-
+     time quality-bar call from round 4, not a spec freeze — a direct
+     instruction this round supersedes it). justify-content:center here
+     is what actually moves .desire__inner off the left edge; the old
+     asymmetric build relied on the ABSENCE of this rule (default
+     flex-start) plus a redundant margin-right:auto on .desire__inner,
+     both removed below. */
+  justify-content: center;
+  /* VERTICALLY top-anchored, not centered — changed again same day,
+     same-round follow-up correction from Nilesh: the jar (first child of
+     .desire__inner) should sit near the actual TOP of the section, not
+     centered — centering the whole jar+copy+CTA column as a group (the
+     first version of this rule) put the jar too far down as a side
+     effect. `.desire` is a ROW-direction flex container (its one child
+     is .desire__inner), so align-items is the vertical/cross axis here —
+     flex-start is what moves the column to the top. */
+  align-items: flex-start;
+  /* Top padding now needs to clear the fixed header explicitly, since
+     the column no longer centers itself clear of it automatically —
+     same pattern .hero already uses (--header-height-mobile/
+     --header-height + breathing room), not a bare --space-6 anymore. */
+  padding: calc(var(--header-height-mobile) + var(--space-4)) var(--space-4) var(--space-6);
+  /* Deliberately NO background-color here — not an oversight. body
+     (css/base.css) paints --dissolve-field-color as ONE continuous
+     surface behind the whole homepage; .desire staying transparent is
+     what lets that single surface show through instead of a second,
+     separately-painted rectangle that only happens to match it. See the
+     file header comment above for the full reasoning (this replaced an
+     earlier pass that DID set this section's own matching background,
+     which Nilesh confirmed still left a structural seam). */
+  background: transparent;
+  color: var(--desire-fg); /* base text colour — see .desire__shuffle below, which relies on this via currentColor */
+}
+@media (min-width: 768px) {
+  /* Full shorthand (not just padding-top) so this doesn't fight the
+     mobile rule's own shorthand above — was two separate media-query
+     blocks that silently conflicted (the plain --space-7 one, unchanged
+     since round 1, was overriding this round's header-aware top value
+     since it came second in the cascade); merged into one, caught before
+     shipping by checking computed padding-top in-browser, not assumed
+     from reading the rules alone. */
+  .desire { padding: calc(var(--header-height) + var(--space-5)) var(--space-6) var(--space-7); }
+}
+
+.desire__inner {
+  display: flex;
+  flex-direction: column;
+  /* Tightened from --space-6 (2026-09-14) — the new .desire__jar sits
+     above .desire__stage in this same column and needs to read as part
+     of "one piece" with the copy below it ("jar and copy feeling like
+     one piece, not image + separate text block" — Nilesh), not spaced
+     apart the same amount as the deliberate copy-to-CTA breathing room
+     the --space-6 value was originally tuned for. One value still
+     applies uniformly between all three children (jar/stage/actions) —
+     simplest correct fix; a per-pair gap would need an extra wrapper for
+     no real benefit at this composition's scale. */
+  gap: var(--space-4);
+  /* Outer safety cap only — NOT the line-wrapping control (that's
+     .desire__line's own max-width below, in its own ch context). Bug
+     found while verifying (not assumed): a `ch`-based max-width set
+     HERE resolves against this element's inherited ~16px body font, not
+     against .desire__line's much larger Elizeth clamp() — completely
+     decoupled from the text that's actually wrapping. That made desktop
+     (bigger line font, same small ch-based pixel width) wrap WORSE than
+     mobile, the opposite of "fuller horizontally." Fixed by moving the
+     ch-based cap onto .desire__line itself, where ch means something. */
+  max-width: min(90vw, 46rem);
+}
+/* The old "Left third, rest of the section left open" asymmetric rule
+   (margin-right: auto at 768px) is REMOVED, not overridden — .desire's
+   own justify-content: center (above) now does the centering at every
+   breakpoint, uniformly, per Nilesh's direct instruction this round. */
+
+/* ============================================================
+   DESIRE BEAT — product jar anchor (new, 2026-09-14; repositioned +
+   asset-slot rebuilt, same day, follow-up round)
+   Still, non-performing anchor: opacity + blur only, tweened on the SAME
+   scroll-scrubbed timeline as the hero video's own dissolve/blur (see
+   initHeroDesireTransition(), main.js) — resolves into focus exactly as
+   the video fades, never moves/scales/settles-aside on its own. Its
+   on-screen position otherwise comes from ordinary scrolling (the
+   section itself scrolling into view) — no separate entrance tween.
+   Stacked FIRST in .desire__inner's column — now with `.desire` itself
+   top-aligned (see that rule above), not centered, so the jar sits near
+   the actual TOP of the section, per Nilesh's direct correction — the
+   first pass's "upper-center" was only a side effect of centering the
+   whole jar+copy+CTA column as a group, which read as too far down.
+   ============================================================ */
+.desire__jar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Room for .desire__jar-badge below the image (see that rule) plus its
+     own .is-placeholder::after tag above IT — space-5, not the tighter
+     space-2 used elsewhere in this block, specifically so the badge
+     stack doesn't crowd .desire__jar-id right below it (verified by
+     screenshot — space-4 still let the two-line badge tag touch the
+     identity text). */
+  gap: var(--space-5);
+}
+.desire__jar-media {
+  position: relative;
+  display: inline-flex;
+  /* Both scroll-scrubbed together with the hero video's own blur/opacity
+     — see main.js. No CSS default opacity/blur override here, same
+     convention as .hero__video: the GSAP fromTo() sets the correct
+     progress-matched value immediately on creation, and under
+     prefers-reduced-motion (where that tween is never created at all,
+     see initHeroDesireTransition()) this element simply stays at its
+     plain CSS state — fully opaque, unblurred — which is the right
+     reduced-motion fallback (visible, just without the scroll-tied
+     resolve), matching the video's own reduced-motion behaviour. This
+     wrapper is the stable GSAP target regardless of what's inside it
+     (placeholder / img / video, see below) — swapping the child element
+     never needs a main.js change. */
+  will-change: opacity, filter;
+}
+/* Sizing box for the jar asset. Fixed width+height (not just height with
+   width:auto) so object-fit:contain (below) has an actual 2D box to fit
+   the image INTO without cropping or distorting — letterboxing on
+   whichever axis the asset's own aspect ratio doesn't fill, which is
+   also what keeps this robust for the next swap (a differently-shaped
+   real photo, or a video) without retuning.
+
+   ENLARGED 2026-09-15, first pass (Nilesh: too small to read/judge,
+   wanted "roughly double... feel present and substantial") — floor and
+   ceiling roughly doubled from the original placeholder-era box
+   (160/280 -> 260/560 width, 120/220 -> 195/420 height), same 4:3 ratio
+   carried through.
+
+   ENLARGED AGAIN, same day, second pass — Nilesh: still moderately
+   bigger ("a bit larger still... substantial and present"), explicitly
+   NOT another doubling this time. Bumped ~9-14% on top of the first
+   pass (260/560 -> 265/640 width, 195/420 -> 199/480 height, 75vw/56vw
+   -> 82vw/61.5vw) rather than repeating the same "roughly double" jump
+   — the ceiling/vw values do the visible work at realistic breakpoints;
+   the floor barely moved (260->265px) since it only ever activates
+   below ~320px viewport width, where headroom is genuinely tight.
+   Re-checked against the same narrow-phone safety margin as the first
+   pass, one step narrower this time (320px, not just 360px, since the
+   floor itself moved): .desire's side padding leaves 272px available
+   at a 320px viewport; the 265px floor clears that with 7px to spare.
+   At the primary test width (390px) the used value is 82vw = 319.8px,
+   well inside the 342px available there. */
+.desire__jar-image {
+  width: clamp(265px, 82vw, 640px);
+  height: clamp(199px, 61.5vw, 480px);
+  object-fit: contain;
+}
+/* Persistent placeholder tag — same convention as .hero__mock-badge
+   (home.css, hero block): a small corner marker, not a dashed box around
+   the whole image (which would fight the "judge composition, not the
+   placeholder's beauty" instruction by drawing extra attention to the
+   box itself rather than the shape/scale it's standing in for). Sits
+   BELOW the jar's own box (not overlapping a corner of it, unlike a
+   first-pass version of this rule) — .is-placeholder's own ::after tag
+   (base.css) floats above THIS element's top edge, and with the badge
+   overlapping the jar shape that tag collided with the placeholder
+   silhouette itself in a screenshot check; moving the badge fully clear
+   of the jar's box gives the ::after tag room too, avoiding both
+   collisions with one fix. Text avoids repeating "placeholder" (the
+   ::after tag already says it) — same wording pattern as
+   .hero__mock-badge ("Mock footage — not final"). */
+.desire__jar-badge {
+  position: absolute;
+  bottom: -1.9rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  white-space: nowrap;
+}
+/* Quiet product identity — "what is this," nothing else (CLAUDE.md §9:
+   no ingredients/claims here). Real brand naming, not placeholder text —
+   deliberately NOT wrapped in .is-placeholder. Sits at reduced opacity,
+   same --desire-fg token as the rest of the copy so it moves with the
+   Parchment/Deep Teal toggle automatically. */
+.desire__jar-id {
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  letter-spacing: 0.06em;
+  color: var(--desire-fg);
+  opacity: 0.65;
+  text-align: center;
+}
+
+.desire__stage {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+}
+
+/* Wraps the swapping line(s) — see initDesireBeat(). position:relative
+   is load-bearing: the incoming line during a shuffle is positioned
+   absolute against THIS box, not the viewport.
+
+   HEIGHT IS FIXED, not JS-measured/tweened anymore (round 4, Nilesh):
+   locked to exactly two lines at this section's line-height, sized for
+   the tallest (2-line) case, so the text block — and everything below
+   it, i.e. the CTA — never moves when a 1-line statement swaps for a
+   2-line one or back. Session 33/34 GSAP-tweened the wrap's height
+   between each shuffle's measured old/new heights; that was the actual
+   cause of the CTA visibly shifting every shuffle, not a rendering
+   glitch — removed outright in main.js, not just papered over here.
+
+   --desire-fs is defined ONCE here and referenced by .desire__line
+   below via var(), rather than each repeating its own clamp()
+   literal — both the fixed height (line-height * 2, in em) and the
+   text's own rendered size need to resolve against the SAME font
+   context. Session 33 shipped a real bug from exactly this kind of
+   mismatch (a `ch` cap on a different element than the text using it,
+   see that session's build-log entry) — this is the same trap for `em`,
+   not repeating it.
+
+   overflow:hidden here is a safety net, not the primary clip — each
+   .word mask already clips itself. It only matters if a statement ever
+   exceeds two lines (shouldn't happen, given .desire__line's own
+   max-width below), keeping that from spilling into the CTA rather than
+   silently trusting it never will.
+
+   No .is-placeholder marker on this wrapper anymore (round 4, Nilesh —
+   read as a stray debug outline, not useful information, and it broke
+   the section's felt cleanliness even in draft). The six statements
+   ARE still placeholder Hinglish pending final wording — that status is
+   now tracked only in gaps.md/build-log.md and the index.html comment,
+   not visibly marked on the page. Deliberate, not an oversight — flagged
+   here so it isn't mistaken for one. */
+.desire__line-wrap {
+  --desire-fs: clamp(1.6rem, 6.5vw, 3.4rem);
+  position: relative;
+  width: 100%;
+  font-size: var(--desire-fs);
+  height: calc(1.35em * 2);
+  overflow: hidden;
+}
+
+/* The statement itself — Elizeth (the brand's expressive face), not
+   Kohinoor Devanagari: these are Latin-script Hinglish now. font-size
+   references --desire-fs (defined on .desire__line-wrap above) rather
+   than restating the clamp() literal — one source of truth the fixed
+   wrap height and the text size can't drift apart from. line-height
+   stays generous (masks below need the extra vertical room so
+   descenders in Elizeth's italic-leaning forms don't get clipped by
+   overflow:hidden). Margin is 0 — vertical rhythm is entirely
+   .desire__stage's gap, not baked into the paragraph. */
+.desire__line {
+  margin: 0;
+  font-family: var(--font-subheading);
+  font-size: var(--desire-fs);
+  line-height: 1.35;
+  /* ch here resolves against THIS element's own font-size (the
+     var(--desire-fs) above), so it scales correctly with the
+     responsive type size — unlike the old .desire__inner cap this
+     replaced (Session 33). Value is a build-time starting point,
+     re-verified against the current 5 real (proofing-pending)
+     statements at 390/1440px to land on <=2 lines — retune if wording
+     changes after proofing pushes any line noticeably longer/shorter. */
+  max-width: 27ch;
+}
+/* The incoming line during a shuffle — absolutely stacked over the
+   outgoing (static-flow) line inside .desire__line-wrap, same width, so
+   both read as occupying "the same slot" even though each wraps its own
+   words independently (see initDesireBeat() for why literal pixel-
+   perfect per-word slot-sharing isn't attempted with proportional,
+   variable-length Hinglish text). */
+.desire__line--incoming {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* Per-word rising mask — same primitive as .paradox__line .word below,
+   used for BOTH directions here (word rises up-and-out on exit, up-and-
+   in on entry) rather than reveal-only. The mask (.word) never moves;
+   only the inner span does — see initDesireBeat() for the yPercent
+   choreography and the per-word randomized stagger. */
+.desire__line .word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+}
+.desire__line .word > span {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Elizeth's Trial .otf is missing glyphs for ! ? ; : ' " ( ) & — found
+   incidentally 2026-09-13 (statement 5's "!" rendering as tofu), same
+   underlying gap already logged in gaps.md for the hero/Trust pages
+   (apostrophe/em-dash), wider-scoped than previously known. main.js's
+   appendWordContent() wraps just the broken character in this class,
+   Elizeth stays on everything else in the word — resolves itself once
+   the licensed (non-Trial) files land, nothing to revisit before then. */
+.desire__glyph-fallback {
+  font-family: var(--font-body);
+}
+
+/* Every word (including the former "anchor" word 0 — that feature was
+   removed 2026-09-14, see build-log.md Session 40) sits at a slightly
+   receded opacity, "a remembered thought" rather than shouting — was
+   previously the "rest of the sentence" treatment contrasted against an
+   interactive, full-strength, accent-coloured word 0; now applies
+   uniformly since there's no longer a distinct word to contrast against.
+   --desire-fg (Ink on Parchment / Parchment on Deep Teal, see the HERO ->
+   DESIRE TRANSITION block above) carries the hue; --desire-fg-opacity is
+   the recede amount. */
+.desire__line .word > span {
+  color: var(--desire-fg);
+  opacity: var(--desire-fg-opacity);
+  letter-spacing: 0.005em;
+}
+
+/* Shuffle affordance — a small, quiet discovery, not a control
+   competing for attention. Always active now (no earned-reveal
+   mechanic on the CTA anymore) — this button itself was never part of
+   that mechanic, unchanged from the previous round. Plain CSS hover/
+   press feedback only (opacity, no motion) — the reel itself is GSAP. */
+.desire__shuffle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin-left: -0.4rem; /* optically align the icon's glyph, not the hit target's box */
+  opacity: 0.4;
+  transition: opacity 0.25s ease;
+}
+.desire__shuffle svg { width: 18px; height: 18px; }
+.desire__shuffle:hover,
+.desire__shuffle:focus-visible { opacity: 0.7; }
+.desire__shuffle:active { opacity: 0.9; }
+
+.desire__actions { display: flex; }
+
+/* CTA — always active/full-presence from load (the previous round's
+   earned-reveal, opacity-0.55-until-3-shuffles mechanic is fully
+   removed, not disabled — "the CTA stays present and active at all
+   times," Nilesh). Uses .btn--on-dark's custom-property mechanism with
+   Variant F's values from button-library.html (Clay face / Parchment
+   text / Olive+Rose stripe) — see the index.html comment for why this
+   specific variant, not another, given this section's light ground.
+
+   flex-shrink: 0 + white-space: nowrap carried over unchanged from the
+   previous round — still load-bearing for the same reason (a flex
+   item's default min-width:auto lets its label wrap under compression
+   once the row is narrower than the text; verified broken without this
+   fix, see build-log.md Session 32). */
+.desire__cta {
+  --btn-face-bg: var(--color-clay);
+  --btn-face-fg: var(--color-parchment);
+  --btn-stripe-1: var(--color-olive);
+  --btn-stripe-2: var(--color-rose);
+  --btn-stripe-band: 4px;
+  --btn-stripe-dur: 7s;
+  --btn-stripe-dir: 1;
+  flex-shrink: 0;
+}
+.desire__cta .btn__face { white-space: nowrap; }
+
+/* ============================================================
+   HOMEPAGE — CATEGORY PARADOX — spec section 4
+   Status: typographic treatment/interaction frozen, copy open.
+   ============================================================ */
+
+.paradox {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-6) var(--space-4);
+  background: var(--color-parchment);
+}
+@media (min-width: 768px) {
+  .paradox { padding: var(--space-7) var(--space-6); }
+}
+
+.paradox__line {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: var(--fs-display);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+  max-width: 16ch;
+}
+.paradox__line .word {
+  display: inline-block;
+  overflow: hidden;
+}
+.paradox__line .word > span {
+  display: inline-block;
+  will-change: transform;
+}
+
+.paradox__line.is-placeholder {
+  font-size: var(--fs-h1);
+  max-width: 22ch;
+  padding: 0.4em 0.8em;
+  line-height: 1.3;
+}
+
+.paradox__actions {
+  margin-top: var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+/* Dormant as of 2026-09-06: both CTAs in .paradox__actions are currently
+   placeholders (Nilesh — wording unfrozen on both, not just the purchase
+   one). This rule isn't applied to any element right now but stays ready
+   for when "Test your taste buds" (or whatever replaces it) is approved
+   and becomes a real link again. */
+.paradox__taste-cta {
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+/* ============================================================
+   HOMEPAGE — TRUST HANDOFF — spec section 10 entry point #3.
+   Quiet, calm, small — deliberately NOT a banner. Sits after the
+   last homepage section for the visitor who's just been won over
+   and is starting to wonder "can I trust it?"
+   ============================================================ */
+.home-trust-handoff {
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  background: var(--color-parchment);
+}
+@media (min-width: 768px) {
+  .home-trust-handoff { padding: var(--space-7) var(--space-6); }
+}
+.home-trust-handoff__prompt {
+  font-size: var(--fs-small);
+  opacity: 0.65;
+  margin: 0 0 var(--space-2);
+}
+.home-trust-handoff__link {
+  font-family: var(--font-heading);
+  font-size: var(--fs-body);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.home-trust-handoff__link:hover, .home-trust-handoff__link:focus-visible { opacity: 0.7; }
+.home-trust-handoff__link:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }

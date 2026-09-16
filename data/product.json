@@ -1,0 +1,11 @@
+{
+  "_note": "Prices are placeholders and bind to Shopify at translation — do NOT add real values here (CLAUDE.md, spec section 9). weightGrams is real (the three confirmed SKUs); it drives the cart's running subtotal (item count + total weight) since no real price exists yet to sum.",
+  "product": {
+    "name": "Amlaprash",
+    "variants": [
+      { "id": "200g", "label": "200g jar", "weightGrams": 200 },
+      { "id": "500g", "label": "500g jar", "weightGrams": 500 },
+      { "id": "1kg", "label": "1kg jar (500g × 2)", "weightGrams": 1000 }
+    ]
+  }
+}

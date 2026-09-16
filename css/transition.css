@@ -1,0 +1,41 @@
+/* ============================================================
+   PAGE TRANSITION — spec section 7
+   Status: first-pass, unreviewed (no reference material existed).
+   Reuses the entry screen's visual language deliberately, so it
+   reads as the same brand moment rather than a second invention.
+   See gaps.md.
+   ============================================================ */
+
+.page-transition {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-transition);
+  background: var(--color-teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(100%);
+  pointer-events: none;
+}
+
+.page-transition__emblem {
+  /* Was 150-200px — still reads small (Nilesh, 2026-09-06, motion pass).
+     Bumped again: ~230-320px, same gentle viewport scaling so it doesn't
+     jump at a breakpoint. */
+  width: clamp(230px, 55vw, 320px);
+  aspect-ratio: 865.2 / 876.7; /* real emblem asset proportions, not square */
+  opacity: 0;
+}
+.page-transition__emblem path {
+  fill: var(--color-parchment);
+}
+
+/* set synchronously (pre-paint) by the inline script in <head> when
+   arriving from a link-triggered transition — see entry.css comment */
+html.transition-incoming .page-transition {
+  transform: translateY(0%);
+  pointer-events: auto;
+}
+html.transition-incoming .page-transition__emblem {
+  opacity: 1;
+}

@@ -1,0 +1,59 @@
+/* ============================================================
+   ENTRY / LOADING SCREEN — spec section 1
+   Sequence adapted from the working prototype in
+   file_compilations/CKC_hindi_to_english_load_transition.html
+   (Phase 1+2). Phase 3 (curtain lift) is new — see gaps.md for
+   the open question this still needs review on.
+
+   Restructured 2026-09-06 (build-log.md, "one wordmark node" fix): the
+   curtain is now a bare full-viewport colour panel with no children at
+   all. The wordmark itself lives permanently in
+   .site-header__wordmark-wrap (see index.html + header.css) — during the
+   entry sequence, entry-animation.js gives it a temporary scale/position
+   transform and raises its wrap's z-index above this curtain's, so it
+   visually reads as "inside" the curtain without ever being a DOM
+   descendant of it. That's what removes the old detach/reparent step:
+   there is nothing for the curtain's own lift transform to carry along.
+   ============================================================ */
+
+.entry-screen {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-entry);
+  background: var(--color-teal);
+  overflow: hidden;
+}
+
+/* Resting/default state of the wordmark's glyph groups — this is the
+   FINISHED state (Hindi assembled, English hidden), not a blank slate.
+   That makes it correct by default with zero JS: reduced-motion,
+   session-skip, and direct navigation to contact/trust all just render
+   the header mark as-is, nothing to swap in. When the entry sequence is
+   actually going to play, entry-animation.js explicitly zeroes the Hindi
+   groups + dot back to opacity 0 before Phase 1 starts (see that file) so
+   Phase 1/2's own tweens have a blank slate to animate from. */
+.entry-glyph { opacity: 0; }
+[id^="entry-hi-"], #entry-dot { opacity: 1; }
+
+/* Deliberately no CSS `transform` on .entry-glyph/.entry-dot (see
+   build-log.md) — GSAP owns the from-state via gsap.set() in
+   entry-animation.js instead. Authoring the resting scale/translate in
+   CSS caused GSAP to misparse the pre-existing matrix and render the dot
+   ~150-230px off-position; these elements are opacity-driven anyway, so
+   CSS never needed to hold a transform for a visual reason. Don't re-add
+   one here without retesting the dot's live position. */
+
+@media (prefers-reduced-motion: reduce) {
+  .entry-screen { display: none; }
+}
+
+body.entry-active {
+  overflow: hidden;
+}
+
+/* set synchronously (pre-paint) by the inline script in <head> when the
+   entry animation has already played this session, or motion is reduced —
+   prevents a flash of the entry screen on repeat homepage loads */
+html.entry-skip .entry-screen {
+  display: none;
+}

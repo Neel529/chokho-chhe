@@ -1,0 +1,207 @@
+/* ============================================================
+   SHOP PAGE — spec section 9
+   Status: 🟡 architecture decided, copy + pricing + photography open.
+   Quiet/parchment register (Nilesh, 2026-09-06) — same transactional,
+   task-focused character as Contact/Trust, not the homepage's cinematic
+   hero treatment. Shop's job (spec section 9's content-architecture note)
+   is "transacts, and answers how do I actually use this," not seduction —
+   that's already the homepage's job.
+   ============================================================ */
+
+.shop {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: calc(var(--header-height-mobile) + var(--space-6)) var(--space-4) var(--space-7);
+}
+@media (min-width: 768px) {
+  .shop {
+    padding-top: calc(var(--header-height) + var(--space-7));
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+
+/* ---- 1. Product hero ---- */
+.shop__hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-bottom: var(--space-7);
+}
+@media (min-width: 768px) {
+  .shop__hero { flex-direction: row; align-items: flex-start; gap: var(--space-7); }
+}
+
+.shop__figure {
+  flex: 1 1 40%;
+  aspect-ratio: 4 / 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: var(--fs-small);
+  line-height: 1.6;
+}
+
+.shop__info {
+  flex: 1 1 60%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+.shop__title { font-size: var(--fs-h1); }
+
+.shop__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* size selector — pills, real radios underneath for accessibility/keyboard
+   use, visually hidden rather than display:none so focus is still visible */
+.shop__variants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.shop__variant {
+  position: relative;
+  cursor: pointer;
+}
+.shop__variant input {
+  position: absolute;
+  opacity: 0;
+  width: 1px; height: 1px;
+}
+.shop__variant span {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: var(--fs-small);
+  letter-spacing: 0.04em;
+  padding: 0.7em 1.4em;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 35%, transparent);
+  border-radius: 999px;
+  transition: background var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
+}
+.shop__variant input:checked + span {
+  background: var(--color-ink);
+  color: var(--color-parchment);
+  border-color: var(--color-ink);
+}
+.shop__variant input:focus-visible + span {
+  outline: 2px solid var(--color-clay);
+  outline-offset: 2px;
+}
+
+.shop__price { margin: 0; }
+
+.shop__qty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.shop__qty-btn {
+  width: 32px; height: 32px;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 35%, transparent);
+  border-radius: 50%;
+  font-size: 1.1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shop__qty-btn:hover { border-color: var(--color-ink); }
+.shop__qty-btn:focus-visible { outline: 2px solid var(--color-clay); outline-offset: 2px; }
+.shop__qty-value {
+  min-width: 1.5em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.shop__form-error { font-size: var(--fs-small); color: var(--color-clay); }
+
+/* Quiet Trust-page link — spec section 10 entry point #2. Deliberately
+   quieter than .shop__linkout below (smaller, muted at rest, not just on
+   hover) — it answers "can I trust this?" beside the purchase decision
+   without competing with .shop__add for attention. Text link, never a
+   pill button, per spec. */
+.shop__trust-link {
+  font-size: var(--fs-small);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  opacity: 0.65;
+}
+.shop__trust-link:hover, .shop__trust-link:focus-visible { opacity: 1; }
+.shop__trust-link:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* ---- shared vertical rhythm for sections 2-5, same pattern as trust.css ---- */
+.shop__section + .shop__section { margin-top: var(--space-7); }
+.shop__section > .section-label { display: block; margin-bottom: var(--space-4); }
+
+/* ---- 2. Taste & use — copy not yet written ---- */
+.shop__body { max-width: 42rem; line-height: 1.6; }
+
+/* ---- 3. Formulation link-out ---- */
+.shop__linkout {
+  font-size: var(--fs-body);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.shop__linkout:hover { opacity: 0.7; }
+.shop__linkout:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* ---- 4. Shipping & returns — refund policy is real/approved copy;
+   delivery timeframes are Nilesh's to write (placeholder) ---- */
+.shop__shipping { max-width: 42rem; display: flex; flex-direction: column; gap: var(--space-4); line-height: 1.6; }
+
+/* ---- 5. FAQ — native <details>/<summary>, name="shop-faq" makes only one
+   open at a time with zero JS. Purchase-blocking topics only (spec section
+   9); questions/answers are Nilesh's to write — both marked placeholder,
+   only the topic label (shelf life / storage / refrigeration / shipping
+   time — the spec-decided scope) is real. ---- */
+.shop__faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 42rem;
+}
+.shop__faq-item {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+  padding-bottom: var(--space-3);
+}
+.shop__faq-topic {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  margin-bottom: var(--space-2);
+}
+.shop__faq-item summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-family: var(--font-heading);
+  font-size: var(--fs-body);
+}
+.shop__faq-item summary::-webkit-details-marker { display: none; }
+.shop__faq-item summary::after {
+  content: '+';
+  font-size: 1.3rem;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+.shop__faq-item[open] summary::after { transform: rotate(45deg); }
+.shop__faq-item summary:focus-visible { outline: 2px solid var(--color-clay); outline-offset: 3px; }
+.shop__faq-answer { margin-top: var(--space-3); line-height: 1.6; }

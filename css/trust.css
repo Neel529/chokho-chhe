@@ -1,0 +1,233 @@
+/* ============================================================
+   TRUST PAGE — spec section 10 (renamed from "Proof", 2026-09-15
+   per spec: "Proof" is defensive, "Trust" is offered).
+   Job: substantiate the homepage's claims for a visitor who is
+   interested and wants to verify. Frozen three-layer architecture:
+   01 People & Process -> 02 Legitimacy -> 03 Substance.
+   Motion posture is deliberately distinct from the homepage:
+   calm, steady, dimensional — reassuring, not seductive. No
+   reel-shuffle, no cinematic dissolve (those are the homepage's
+   desire beat only). See js/main.js for the reveal/parallax/
+   count-up/unfold implementations this stylesheet supports.
+   Status: 🟡 direction decided, execution open. Story anchor copy
+   is real+approved; "how it's made" copy, ingredient research, and
+   all certificate/facility assets are visibly-marked placeholders.
+   Story-anchor prominence treatment is interim (restrained) —
+   Nilesh to decide (see build-log.md/gaps.md).
+   ============================================================ */
+
+.trust {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: calc(var(--header-height-mobile) + var(--space-6)) var(--space-4) var(--space-7);
+}
+@media (min-width: 768px) {
+  .trust {
+    padding-top: calc(var(--header-height) + var(--space-7));
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+
+.trust__title {
+  font-size: var(--fs-h1);
+  margin-bottom: var(--space-7);
+}
+
+/* ---- Layer scaffolding ----
+   Each layer is `position: relative` so its background index numeral
+   can sit behind the heading without affecting document flow. Layers
+   get generous vertical rhythm between them — this is a page meant to
+   be read calmly, not skimmed like the homepage. */
+.trust__layer {
+  position: relative;
+}
+.trust__layer + .trust__layer {
+  margin-top: var(--space-8);
+}
+
+.trust__layer-head {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+/* The single parallax device on this page (main.js initTrustParallax):
+   a quiet numeral marking each layer's place in the frozen sequence.
+   Kept small and low-contrast on purpose — a whisper of dimensional
+   depth as it drifts slightly against the reading column while
+   scrolling, not a poster-scale graphic moment. */
+.trust__layer-index {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 7vw, 3.75rem);
+  line-height: 1;
+  color: color-mix(in srgb, var(--color-clay) 30%, transparent);
+  flex: none;
+  will-change: transform;
+}
+.trust__layer-heading {
+  position: relative;
+  font-size: var(--fs-h2);
+}
+
+/* even vertical rhythm between the info blocks inside a layer */
+.trust__block + .trust__block {
+  margin-top: var(--space-7);
+}
+.trust__block > .section-label {
+  display: block;
+  margin-bottom: var(--space-4);
+}
+
+/* ---- 1a. Story anchor — MOVED to About Us, 2026-09-15 ----
+   The full narrative (.trust__story-copy, the approved heritage
+   paragraph) now lives on about.html as .about__story-copy — same
+   rule, moved wholesale to css/about.css, not duplicated here. This
+   layer keeps only a one-line pointer + link. */
+.trust__story-lead {
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  max-width: 32rem;
+}
+.trust__story-link {
+  display: inline-block;
+  margin-top: var(--space-3);
+  font-family: var(--font-heading);
+  font-size: var(--fs-body);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.trust__story-link:hover, .trust__story-link:focus-visible { opacity: 0.7; }
+.trust__story-link:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+/* ---- 1b. How it's made — copy + imagery not yet produced ---- */
+.trust__made-body { display: flex; flex-direction: column; gap: var(--space-4); }
+.trust__figure {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: var(--fs-small);
+  line-height: 1.6;
+}
+
+/* ---- 2. Credentials — real facts + placeholder documents ---- */
+.trust__creds-list {
+  display: grid;
+  gap: var(--space-3);
+}
+.trust__cred {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.15em;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+}
+@media (min-width: 560px) {
+  .trust__cred { grid-template-columns: 10rem 1fr; gap: var(--space-3); align-items: baseline; }
+}
+.trust__cred-label {
+  font-family: var(--font-heading);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+}
+.trust__cred-value { font-size: var(--fs-body); }
+.trust__cred-value--mono {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.trust__docs-label {
+  display: block;
+  margin-bottom: var(--space-3);
+}
+.trust__doc-cards {
+  display: grid;
+  gap: var(--space-3);
+}
+@media (min-width: 560px) {
+  .trust__doc-cards { grid-template-columns: repeat(3, 1fr); }
+}
+.trust__doc-card {
+  min-height: 96px;
+  display: flex;
+  align-items: flex-end;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  transform-origin: top center;
+}
+
+/* ---- 3. Full formulation — 45 ingredients from /data/, expandable ---- */
+.trust__form-lead {
+  font-size: var(--fs-small);
+  color: color-mix(in srgb, var(--color-ink) 65%, transparent);
+  margin-bottom: var(--space-4);
+}
+.trust__form-list,
+.trust__form-more {
+  display: grid;
+  gap: var(--space-3);
+}
+@media (min-width: 560px) {
+  .trust__form-list,
+  .trust__form-more { grid-template-columns: 1fr 1fr; gap: var(--space-3) var(--space-5); }
+}
+/* The "more" group is the slow-unfold target (initTrustFormulation,
+   main.js): collapsed to height 0/hidden overflow at rest, animated
+   open with GSAP rather than an instant display swap — "unhurried,
+   nothing to hide" per this round's motion brief. Also functions as
+   the no-JS/pre-hydration resting state. */
+.trust__form-more {
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+.trust__form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+}
+.trust__form-name { font-family: var(--font-heading); font-size: var(--fs-body); }
+.trust__form-botanical {
+  font-style: italic;
+  font-size: var(--fs-small);
+  color: color-mix(in srgb, var(--color-ink) 55%, transparent);
+}
+
+.trust__form-toggle {
+  margin-top: var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+  color: var(--color-ink);
+}
+.trust__form-toggle:hover { opacity: 0.65; }
+.trust__form-toggle:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+.trust__form-error {
+  font-size: var(--fs-small);
+  color: var(--color-clay);
+}
+
+/* Reduced motion: parallax numerals and the slow-unfold height/opacity
+   transition both go through GSAP (main.js checks prefers-reduced-motion
+   directly and either skips the tween or jumps to the end state), so no
+   CSS override is needed here beyond the sitewide rule in base.css. */
+
+/* ---- Trust -> Shop exit — spec section 10 ---- */
+.trust__exit {
+  margin-top: var(--space-8);
+  text-align: center;
+}
+.trust__exit a {
+  font-family: var(--font-heading);
+  font-size: var(--fs-body);
+}
+.trust__exit a:hover, .trust__exit a:focus-visible { opacity: 0.7; }

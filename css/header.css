@@ -1,0 +1,517 @@
+/* ============================================================
+   GLOBAL HEADER — spec section 2
+   Wordmark centre, 3-dot menu trigger left, cart right.
+   ============================================================ */
+
+.site-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-height-mobile);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 var(--space-4);
+  z-index: var(--z-header);
+  background: transparent;
+  transition: background 0.2s var(--ease-standard);
+}
+
+@media (min-width: 768px) {
+  .site-header { height: var(--header-height); padding: 0 var(--space-6); }
+}
+
+/* ---- Header background — added 2026-09-06 while building the Trust page
+   (then still named "Proof" — see gaps.md for the 2026-09-15 rename).
+   The header is a transparent fixed bar. That's right over the hero video
+   (which has its own readability scrim) but on a long light page — Trust,
+   and to a lesser degree Contact — dark body text scrolls up under it and
+   collides with the (also dark) wordmark/icons. So: give it a solid
+   parchment ground exactly when it's over a light section (`header-on-light`),
+   and nowhere else. Suppressed while the menu is open — the ink menu
+   overlay sits behind the header there, and a parchment strip across the
+   top of it would look broken. Fades with the same 200ms as the colour
+   crossfade, so the hero→paradox scroll on the homepage stays smooth. */
+html.header-on-light .site-header {
+  background: var(--color-parchment);
+}
+html.menu-is-open .site-header {
+  background: transparent; /* must come after .header-on-light to win */
+}
+
+/* ---- Header ground colour — spec section 2, Header gate (2026-09-05) ----
+   mix-blend-mode is gone. It read the pixel under the header and inverted
+   it, which is exactly what made it unpredictable over real video (flagged
+   before this gate) and what forced the wordmark's earlier narrow fix
+   (hardcoded parchment, invisible on contact.html — see build-log.md for
+   that history). Replaced with real, explicit colours keyed to what each
+   section actually declares its own background to be — deterministic, no
+   compositing guesswork.
+
+   `--header-fg` is set by two things, in cascade order (later wins):
+   1. `html.header-on-light` — toggled by header.js via ScrollTrigger,
+      one per `[data-header-theme]` section (hero=dark, paradox/contact
+      main=light, footer=dark). Whichever section currently sits behind
+      the fixed header band controls this.
+   2. `html.menu-is-open` — forces parchment. The menu overlay's own
+      background is ink and the header renders above it (z-index), so
+      this isn't a style choice, it's a correctness fix: without it the
+      header would try to render ink-on-ink while the menu is open.
+   Both `.site-header` (trigger/cart) and `.site-header__wordmark-wrap`
+   (still its own fixed sibling — see note below) read the same variable,
+   so the wordmark and icons always move together.
+   Transition: ~200ms crossfade (Nilesh, 2026-09-05) rather than an
+   instant cut. */
+.site-header,
+.site-header__wordmark-wrap {
+  --header-fg: var(--color-parchment); /* default: dark-ground (hero), matches Entry Phase 3 handoff colour */
+}
+html.header-on-light .site-header,
+html.header-on-light .site-header__wordmark-wrap {
+  --header-fg: var(--color-ink);
+}
+html.menu-is-open .site-header,
+html.menu-is-open .site-header__wordmark-wrap {
+  --header-fg: var(--color-parchment); /* must come after .header-on-light to win */
+}
+.site-header *,
+.site-header__wordmark {
+  color: var(--header-fg);
+  fill: var(--header-fg);
+  transition: color 0.2s var(--ease-standard), fill 0.2s var(--ease-standard);
+}
+
+/* Bug fixed 2026-09-06: the wordmark is the SAME node that plays the
+   entry sequence (see entry.css/entry-animation.js — "one wordmark node"
+   restructure), so the rule above would otherwise make it render in this
+   page's --header-fg colour for the ENTIRE entry animation too, not just
+   once resting in the header. On contact.html/trust.html --header-fg is
+   ink (header-on-light, set synchronously pre-paint) while the entry
+   curtain behind it is dark teal — confirmed by direct pixel sampling:
+   the whole Phase 1/2/3 sequence rendered black-on-teal on those two
+   pages. index.html was unaffected only because its --header-fg already
+   defaults to parchment (dark hero ground).
+
+   Fix: force parchment — the curtain's own text colour — for as long as
+   an entry sequence could still be visible, i.e. whenever `entry-skip` is
+   NOT set on <html>. That class is already set synchronously pre-paint
+   for the genuine skip cases (session-played, reduced-motion — see the
+   inline <head> script), so this override is correct from the very first
+   frame with no JS dependency of its own. For an actual play-through,
+   entry-animation.js now also adds `entry-skip` the instant the sequence
+   completes (onComplete, same tick the curtain is removed) — at that
+   point this override stops matching and the rule above takes over,
+   crossfading to this page's real --header-fg over the existing 200ms
+   transition. Higher specificity than the plain-class rule above by
+   design (html + :not(.class) + .class), so it wins without needing
+   `!important` or source-order tricks. */
+html:not(.entry-skip) .site-header__wordmark {
+  color: var(--color-parchment);
+  fill: var(--color-parchment);
+}
+
+/* Wordmark lives OUTSIDE .site-header as its own fixed sibling, not a
+   grid child — legacy reason (mix-blend-mode) no longer applies, kept as
+   a separate element regardless (see build-log.md for that history).
+
+   Restructured 2026-09-06 ("one wordmark node" fix): this wrap's child
+   SVG (#headerWordmark) is now the ONLY wordmark element on the page —
+   also the entry-sequence mark, see entry.css/entry-animation.js. Its
+   z-index is bumped above the entry curtain's only while that sequence is
+   actively animating (`.is-entry-lifted`, toggled by entry-animation.js),
+   so the mark reads as sitting on top of the curtain without ever being a
+   DOM descendant of it. Reverted to normal `--z-header` stacking once the
+   curtain is gone. */
+.site-header__wordmark-wrap {
+  position: fixed;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  height: var(--header-height-mobile);
+  display: flex;
+  align-items: center;
+  z-index: var(--z-header);
+}
+@media (min-width: 768px) {
+  .site-header__wordmark-wrap { height: var(--header-height); }
+}
+.site-header__wordmark-wrap.is-entry-lifted {
+  z-index: calc(var(--z-entry) + 1);
+}
+
+.site-header__wordmark {
+  /* Bumped up 2026-09-06 (was clamp(120px, 16vw, 180px)) alongside the
+     switch to the Hindi mark. The Devanagari glyphs sit taller in the
+     viewBox than the old Latin lowercase did, so the SVG-width increase
+     is modest — the rendered mark is noticeably larger mostly because the
+     script itself has more vertical presence. Visible glyph height lands
+     ~50% of the header band at both ends of the clamp. */
+  width: clamp(135px, 16vw, 200px);
+  height: auto;
+  /* opacity is NOT set here — it's governed per-glyph-group by entry.css
+     (.entry-glyph / hi-groups+dot), since this SVG's children are the
+     same groups the entry sequence animates. The SVG itself is always
+     opacity:1; whether it LOOKS empty or full depends on which groups are
+     currently visible, both before/without JS and during/after the entry
+     sequence. No `opacity` transition here on purpose (removed
+     2026-09-06) — it used to fight the Entry Phase 3 GSAP opacity tween on
+     these same groups, same category of bug as the dot-placement and
+     cursor-scale conflicts elsewhere in this codebase (GSAP and CSS both
+     trying to own one property). color/fill stay: those drive the real,
+     repeatable header ground-colour crossfade (scrolling between light/
+     dark sections), which isn't GSAP-driven. */
+  transition: color 0.2s var(--ease-standard), fill 0.2s var(--ease-standard);
+}
+
+.site-header__trigger,
+.site-header__cart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  transition: opacity var(--dur-fast) var(--ease-standard);
+}
+.site-header__trigger { grid-column: 1; justify-self: start; }
+.site-header__cart { grid-column: 3; justify-self: end; }
+
+.site-header__trigger:hover,
+.site-header__cart:hover { opacity: 0.6; }
+.site-header__trigger:focus-visible,
+.site-header__cart:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.site-header__cart svg { width: 20px; height: 20px; }
+
+/* ---- 3-dot -> 5-dot menu trigger ----
+   First-pass motion: not brand-referenced, kept restrained and easy to
+   swap. See build-log.md.
+   Bug fixed 2026-09-06: `.is-open` was being toggled on the wrapping
+   <button> in header.js, never on this .menu-trigger <svg> itself — so
+   these rules never matched anything and the icon never actually
+   transformed (verified via getBoundingClientRect(): zero movement across
+   all 5 dots after clicking, pre-fix). Fixed in header.js.
+
+   Reverted 2026-09-07 (Nilesh): back to a horizontal row of 3, dropping
+   the diagonal-3/dice-spin idea entirely — keeps the header visually
+   balanced against the cart icon. Closed state is c1/c2/c3 in a row at
+   the vertical centre (7,14)/(14,14)/(21,14) on the same 7-unit grid the
+   dice-5 corners use. Opening is a real transform, not just a fade: c1
+   slides up to the top-left corner (7,7), c3 slides down to the
+   bottom-right corner (21,21), c2 stays put as the centre dot, and c4
+   (top-right)/c5 (bottom-left) fade in to complete the dice-5. Position
+   is CSS `transform: translate()` only — no SVG `transform` attribute on
+   these elements — deliberately, to avoid the exact "static SVG attribute
+   fights animated CSS transform" bug class already hit twice elsewhere in
+   this codebase (entry wordmark, cursor scale — see build-log.md).
+
+   Hand-drawn dot treatment, second attempt 2026-09-07: first attempt (a
+   circle with a subtle wobbled edge) was invisible at 28px button size —
+   dropped by Nilesh. This time each dot is its own genuinely irregular
+   filled blob path (varying radius per angle + elliptical stretch +
+   rotation, no two the same, no shared/reused shape), sized so the
+   irregularity survives being shrunk to real button size rather than
+   only reading at 10x zoom. Solid fill, clean smooth edges — not
+   sketchy/textured, not outlined. */
+.menu-trigger { width: 28px; height: 28px; position: relative; }
+.menu-trigger path {
+  fill: currentColor;
+  transition: transform var(--dur-medium) var(--ease-standard),
+              opacity var(--dur-medium) var(--ease-standard);
+}
+.mt-c1 { transform: translate(7px, 14px); }
+.mt-c2 { transform: translate(14px, 14px); }
+.mt-c3 { transform: translate(21px, 14px); }
+.mt-c4 { transform: translate(21px, 7px); opacity: 0; }
+.mt-c5 { transform: translate(7px, 21px); opacity: 0; }
+
+.menu-trigger.is-open .mt-c1 { transform: translate(7px, 7px); }
+.menu-trigger.is-open .mt-c3 { transform: translate(21px, 21px); }
+.menu-trigger.is-open .mt-c4 { opacity: 1; }
+.menu-trigger.is-open .mt-c5 { opacity: 1; }
+
+/* ============================================================
+   MENU / NAVIGATION OVERLAY — spec section 6, Menu gate (2026-09-06)
+   Open/close motion (fade + staggered nav reveal) is driven entirely by
+   GSAP in header.js, per CLAUDE.md §3 — this stylesheet only sets the
+   closed resting state (opacity/visibility/pointer-events) as a safe
+   default before JS runs; there used to be a `.menu-overlay.is-open` CSS
+   rule for those three properties too, but that fought with GSAP owning
+   the same properties, so it's gone — GSAP sets them explicitly on both
+   open and close now.
+   ============================================================ */
+
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-menu);
+  background: var(--color-ink);
+  color: var(--color-parchment);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-6) var(--space-4);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+@media (min-width: 768px) {
+  .menu-overlay { padding: var(--space-7) var(--space-6); }
+}
+
+.menu-overlay__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+.menu-overlay__nav li { width: fit-content; } /* GSAP stagger target — see header.js */
+.menu-overlay__nav a {
+  font-family: var(--font-heading);
+  font-size: clamp(2.25rem, 9vw, 4.5rem);
+  font-weight: 500;
+  line-height: 1.05;
+  width: fit-content;
+  position: relative;
+}
+.menu-overlay__nav a[data-unavailable] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.menu-overlay__nav a[data-unavailable]::after {
+  content: '— coming soon';
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: var(--space-3);
+  vertical-align: middle;
+}
+/* hover/active state — spec section 2's "Remaining: Hover/active states"
+   item, real for the two enabled links (Home/Contact). An underline
+   reveal, reusing the same idea as .paradox__taste-cta elsewhere rather
+   than inventing a second hover language. Clay is reserved for CTAs only
+   (see variables.css) so this stays parchment/currentColor, not brand
+   accent. */
+.menu-overlay__nav a:not([data-unavailable])::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0.06em;
+  height: 2px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+.menu-overlay__nav a:not([data-unavailable]):hover::before,
+.menu-overlay__nav a:not([data-unavailable]):focus-visible::before {
+  transform: scaleX(1);
+}
+.menu-overlay__nav a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 6px;
+}
+
+.menu-overlay__divider {
+  border: none;
+  border-top: 1px solid color-mix(in srgb, var(--color-parchment) 25%, transparent);
+  margin: 0 0 var(--space-4);
+}
+
+.menu-overlay__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* was stretching each placeholder tag to full width — see build-log.md */
+  gap: var(--space-2);
+  font-size: var(--fs-small);
+  opacity: 0.8;
+}
+.menu-overlay__meta .is-placeholder { color: var(--color-parchment); }
+.menu-overlay__meta .is-placeholder::after { background: var(--color-ink); }
+
+/* ============================================================
+   CUSTOM CURSOR — spec section 3, "cursor swap on nav hover"
+   ============================================================ */
+.custom-cursor {
+  position: fixed;
+  top: 0; left: 0;
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: var(--color-parchment);
+  color: var(--color-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: var(--z-cursor);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-standard);
+  /* No `transform` here on purpose — position (xPercent/yPercent) and the
+     hover scale are owned entirely by GSAP in cursor.js. A CSS transform
+     on this element would get silently overwritten by GSAP's own x/y
+     tween on every mousemove; see cursor.js for the bug this caused. */
+}
+.custom-cursor.is-active { opacity: 1; }
+.custom-cursor__emblem {
+  width: 24px;
+  aspect-ratio: 865.2 / 876.7; /* real emblem asset proportions, not square — same ratio as the page-transition usage */
+  height: auto;
+}
+.custom-cursor__emblem path {
+  /* Cursor background is parchment; the asset's own baked-in fill is
+     parchment too (see transition.css) — invisible here unless overridden. */
+  fill: var(--color-ink);
+}
+
+@media (hover: none) {
+  .custom-cursor { display: none; }
+}
+
+/* ============================================================
+   CART DRAWER — spec section 9
+   Global chrome, same as the menu overlay — lives on every page (see
+   index/contact/trust/shop.html) so the header cart icon opens the same
+   cart regardless of which page it's clicked from (js/cart.js persists
+   state in localStorage for exactly this reason). Genuinely functional:
+   open/close, add, update quantity, remove, running subtotal — only
+   checkout is stubbed (marked not-connected, same treatment as the
+   contact form's submit).
+   Slides in from the right (Nilesh, 2026-09-06) — a drawer, not the
+   entry/page-transition curtain's rise-from-bottom language: the cart is
+   opened/closed repeatedly while still browsing, so keeping the page
+   visible behind it matters more here than reusing that motion identity.
+   ============================================================ */
+
+.site-header__cart { position: relative; }
+.site-header__cart-count {
+  position: absolute;
+  top: -2px; right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--color-clay);
+  color: var(--color-parchment);
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  line-height: 16px;
+  text-align: center;
+}
+
+.cart-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-cart);
+  pointer-events: none;
+}
+.cart-drawer__scrim {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-standard);
+}
+.cart-drawer__panel {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: min(400px, 100vw);
+  background: var(--color-parchment);
+  color: var(--color-ink);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform var(--dur-medium) var(--ease-standard);
+  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.18);
+}
+.cart-drawer.is-open { pointer-events: auto; }
+.cart-drawer.is-open .cart-drawer__scrim { opacity: 1; }
+.cart-drawer.is-open .cart-drawer__panel { transform: translateX(0); }
+
+.cart-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+}
+.cart-drawer__header h2 { font-size: var(--fs-h2); }
+.cart-drawer__close {
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.cart-drawer__close:focus-visible { outline: 2px solid var(--color-clay); outline-offset: 2px; }
+
+.cart-drawer__items {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.cart-drawer__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2) var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+}
+.cart-drawer__item-info { display: flex; flex-direction: column; gap: 0.3em; grid-column: 1 / -1; }
+.cart-drawer__item-name { font-family: var(--font-heading); font-size: var(--fs-small); }
+.cart-drawer__item-price { align-self: flex-start; font-size: var(--fs-micro); }
+.cart-drawer__item-qty {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.cart-drawer__qty-btn {
+  width: 26px; height: 26px;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 35%, transparent);
+  border-radius: 50%;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cart-drawer__qty-btn:hover { border-color: var(--color-ink); }
+.cart-drawer__qty-btn:focus-visible { outline: 2px solid var(--color-clay); outline-offset: 2px; }
+.cart-drawer__qty-value { min-width: 1.4em; text-align: center; font-variant-numeric: tabular-nums; }
+.cart-drawer__remove {
+  justify-self: end;
+  font-size: var(--fs-small);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.cart-drawer__remove:hover { opacity: 0.7; }
+.cart-drawer__remove:focus-visible { outline: 2px solid var(--color-clay); outline-offset: 2px; }
+
+.cart-drawer__empty {
+  padding: var(--space-4);
+  font-size: var(--fs-small);
+  color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+}
+
+.cart-drawer__footer {
+  padding: var(--space-4);
+  border-top: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.cart-drawer__subtotal { font-size: var(--fs-small); min-height: 1.2em; }
+/* NOT width:100% — the new pill button (base.css .btn, 2026-09-07)
+   needs its .btn__shadow and .btn__face to size off the same box (the
+   pill's own content), which breaks if something forces the outer .btn
+   wider than that (the old flat-fill button didn't care, this one
+   does — verified in Playwright: with width:100% here, .btn__shadow
+   filled the full drawer width via inset:0 while .btn__face still
+   hugged the label text, producing two mismatched pill sizes instead
+   of one pill with a slight offset). Centred instead, overriding the
+   drawer footer's flex stretch (align-items default). */
+.cart-drawer__checkout { align-self: center; }
+.cart-drawer__status { font-size: var(--fs-small); color: var(--color-clay); min-height: 1.2em; }

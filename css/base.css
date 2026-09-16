@@ -1,0 +1,236 @@
+/* Reset */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { scroll-behavior: auto; } /* native scroll — no smooth-scroll library in this stack (GSAP only, see CLAUDE.md §3); left explicit so it doesn't fight GSAP ScrollTrigger-driven reveals */
+body {
+  /* --dissolve-field-color (variables.css) defaults to --color-parchment
+     everywhere — identical to the old hardcoded value on every page
+     except index.html, where css/home.css's dissolve mechanic can
+     repoint it live. This is what makes body one continuous painted
+     surface behind the homepage's hero-tail + Section 2 (see that file's
+     header comment) rather than two separately-painted blocks that only
+     happen to match. */
+  background: var(--dissolve-field-color);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img, svg, video { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+ul { list-style: none; margin: 0; padding: 0; }
+h1, h2, h3, p { margin: 0; }
+
+h1, h2, h3 { font-family: var(--font-heading); font-weight: 500; }
+
+/* Respect reduced motion sitewide; individual scripts also check this */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Placeholder content marker ----
+   Used sitewide for any copy/asset/destination that is NOT final.
+   Composition around it is finished; only the marked content itself
+   is a stand-in. Never hide this behind a code comment. */
+.is-placeholder {
+  position: relative;
+  border: 1px dashed color-mix(in srgb, currentColor 45%, transparent);
+  padding: 0.15em 0.6em;
+  display: inline-block;
+}
+.is-placeholder::after {
+  content: 'PLACEHOLDER';
+  position: absolute;
+  top: -0.65em;
+  left: 0.5em;
+  font-family: var(--font-body);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  background: var(--color-parchment);
+  padding: 0 0.35em;
+  color: var(--color-clay);
+  font-weight: 600;
+}
+.is-placeholder--block {
+  display: block;
+  width: 100%;
+}
+
+/* Generic CTA button — complete redesign (Nilesh, 2026-09-07). The prior
+   hand-drawn border/underline/ink-wash system (Session 20) is REMOVED
+   entirely, not layered under this — none of it landed. Two elements:
+   - Resting: a fully-rounded pill (genuinely semicircular ends, not a
+     rounded rectangle), filled Clay, with a second Clay-outlined pill
+     of the same shape offset down-right behind it. That offset outline
+     is what reads as "raised off the surface" — a real second shape,
+     not a blur/drop-shadow.
+   - Press (hover on desktop, active on tap/click — same mechanism
+     reaches both): the filled face travels down-right into the offset
+     outline, closing the gap, reading as physically pressed. Quick
+     (0.12s) and snappy on purpose — anything slower reads as floaty,
+     which was explicitly ruled out.
+   Approved and untouched since. A third element — a hand-drawn circle
+   that drew itself around the label on scroll-into-view (Sessions 21-22)
+   — was removed outright 2026-09-07 per Nilesh ("it isn't working"), not
+   disabled or commented out: the markup, the .btn__label-wrap/
+   .btn__circle-svg/.btn__circle-pass CSS, and initCtaCircles() in
+   main.js are all gone, same as how the border/underline/wash system
+   was fully removed in Session 21 rather than layered under. No open
+   gaps.md entry existed for it (it was live, built code, never a
+   deferred item), so there was nothing to close there either. */
+.btn {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+}
+.btn:disabled { cursor: not-allowed; opacity: 0.5; }
+
+.btn__shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid var(--color-clay);
+  background: transparent;
+  transform: translate(6px, 6px);
+  pointer-events: none;
+}
+.btn__face {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-clay);
+  color: var(--color-parchment);
+  font-family: var(--font-heading);
+  font-size: var(--fs-small);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.85em 2.4em;
+  border-radius: 999px;
+  transform: translate(0, 0);
+  transition: transform 0.12s cubic-bezier(0.3, 0, 0.4, 1);
+}
+.btn:not(:disabled):hover .btn__face,
+.btn:not(:disabled):active .btn__face {
+  transform: translate(6px, 6px);
+}
+
+/* ---- .btn--on-dark : striped CTA variant for dark / video sections ----
+   (Nilesh, 2026-09-10; stripe + weight reworked 2026-09-10 round 2.)
+
+   Rule, not a one-off: on dark / video grounds the CTA gets a light face
+   so it pops where the default Clay fill recedes; on light / parchment
+   pages (Shop, Trust, Contact) the CTA keeps the default Clay face above.
+   Pill shape + press mechanics (6px down-right travel, 0.12s) unchanged —
+   this swaps fill colours, bolds the label, and puts an animated diagonal
+   stripe INSIDE the offset layer only. On press the face travels over the
+   offset and covers the stripes — the press "swallows" the pattern.
+
+   All colour / timing is driven by the custom properties below so a
+   colourway can be swapped by overriding vars (see cta-variants.html,
+   the A–F comparison harness). Defaults here = the combination Nilesh
+   liked: Olive face, Clay bold text, Parchment+Clay stripes drifting
+   anticlockwise.
+
+   Pure CSS, no JS — ports straight to Liquid. The sitewide
+   prefers-reduced-motion rule (top of this file) freezes the drift;
+   static two-tone stripes remain, which is the correct fallback. */
+.btn--on-dark {
+  --btn-face-bg: var(--color-olive);
+  --btn-face-fg: var(--color-clay);
+  --btn-stripe-1: var(--color-parchment);
+  --btn-stripe-2: var(--color-clay);
+  --btn-stripe-band: 4px;      /* each stripe; period = 2x this */
+  --btn-stripe-dur: 7s;        /* time for one full seamless cycle */
+  --btn-stripe-dir: -1;        /*  1 = up-right drift,  -1 = down-left (anticlockwise) */
+  /* Seamless-loop travel: exactly 6 stripe periods projected onto the
+     45deg axis  ->  6 * (2 * band) / sqrt(2)  ==  band * 8.485281.
+     Any band width stays seamless because the travel is derived from it. */
+  --btn-stripe-x: calc(var(--btn-stripe-band) *  8.485281 * var(--btn-stripe-dir));
+  --btn-stripe-y: calc(var(--btn-stripe-band) * -8.485281 * var(--btn-stripe-dir));
+}
+.btn--on-dark .btn__face {
+  background: var(--btn-face-bg);
+  color: var(--btn-face-fg);
+  font-family: var(--font-heading);
+  font-weight: 600; /* Semibold — see variables.css @font-face note */
+}
+.btn--on-dark .btn__shadow {
+  border-color: var(--btn-stripe-2);
+  background: var(--btn-stripe-1); /* fallback under the stripe pseudo */
+  overflow: hidden;               /* clip the stripe pseudo to the pill */
+  /* overflow:hidden + border-radius alone can let a composited/animated
+     child leak past the ROUNDED ends on some GPUs (the "stripes escaping
+     the offset" bug). clip-path clips composited descendants reliably. */
+  clip-path: inset(0 round 999px);
+}
+.btn--on-dark .btn__shadow::before {
+  content: '';
+  position: absolute;
+  /* FIXED overhang, not a percentage. The pseudo must fully cover the
+     offset at EVERY point in the drift, in any direction. The keyframe
+     translate is up to band*8.485 per axis (~34px at band 4px, ~51px at
+     band 6px). The old `inset: -60%` gave 60% of the offset's ~40px
+     HEIGHT = ~24px of vertical headroom — less than the travel — so on
+     the up-drifting variants (B-F) the pattern slid off the visible
+     bottom sliver near the loop point and the solid fallback colour
+     flashed through. Variant A only looked seamless because it drifts
+     DOWN-left: its uncovered gap lands at the top edge, hidden behind the
+     face. 120px clears every case with margin to spare. */
+  inset: -120px;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--btn-stripe-1) 0 var(--btn-stripe-band),
+    var(--btn-stripe-2) var(--btn-stripe-band) calc(var(--btn-stripe-band) * 2)
+  );
+  animation: ckc-btn-stripe-drift var(--btn-stripe-dur) linear infinite;
+  pointer-events: none;
+}
+/* Translating by an exact multiple of the stripe period projected onto the
+   45deg axis maps the pattern onto itself -> seamless loop with continuous
+   visible motion. --btn-stripe-x/y carry that vector (6 periods). */
+@keyframes ckc-btn-stripe-drift {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(var(--btn-stripe-x), var(--btn-stripe-y)); }
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-ink);
+  border: 1px solid currentColor;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.section-label {
+  font-family: var(--font-heading);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-clay);
+}

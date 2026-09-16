@@ -1,0 +1,31 @@
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Node — used only temporarily during dev/testing (e.g. Playwright checks),
+# never part of the shipped static site
+node_modules/
+package.json
+package-lock.json
+npm-debug.log*
+
+# Temp/scratch
+*.tmp
+*.bak
+*.log
+
+# Internal working docs — process/planning notes, not site content
+CLAUDE.md
+Ckc_website_master_specification.md
+gaps.md
+build-log.md
+
+# Scratch / reference HTML — not part of the live site's navigation
+cta-variants.html
+button-library.html
+CKC_hindi_to_english_load_transition.html

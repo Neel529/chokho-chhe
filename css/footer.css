@@ -1,0 +1,95 @@
+/* ============================================================
+   SITE FOOTER — spec section 8
+   Shared component, present on every page (Home/Shop/Trust/Contact) —
+   moved out of contact.css 2026-09-06 now that it's sitewide, not
+   Contact-only. Same file-per-shared-component pattern as entry.css/
+   transition.css/header.css. Content itself is unchanged from the
+   already-built Contact footer: real site map, everything else a marked
+   placeholder (socials/address/email/copyright don't exist yet).
+   `data-header-theme="dark"` on the element (see each page's markup) is
+   what makes the header correctly flip to its light/parchment colours
+   once scrolled to the footer — same mechanism already driving every
+   other themed section, no new JS needed (header.js's
+   initHeaderGroundTheme() already watches every [data-header-theme]
+   element generically).
+   Legal links (Privacy/Terms/Shipping/Refund) added 2026-09-06 — real
+   labels, placeholder destinations; the pages themselves are built in
+   Shopify at translation, not here (see spec Section 8).
+   ============================================================ */
+
+.site-footer {
+  padding: var(--space-6) var(--space-4);
+  background: var(--color-ink);
+  color: var(--color-parchment);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  align-items: center;
+  text-align: center;
+}
+@media (min-width: 768px) {
+  .site-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    text-align: left;
+    padding: var(--space-5) var(--space-6);
+  }
+}
+.site-footer__sitemap { display: flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; }
+.site-footer__sitemap a {
+  position: relative;
+  font-family: var(--font-heading);
+  font-size: var(--fs-small);
+}
+/* Hover/focus underline reveal — added 2026-09-06 now that this is a
+   sitewide nav, not just Contact's. Reuses the exact same idea already
+   used for the menu overlay's nav links (header.css) rather than
+   inventing a second hover language. */
+.site-footer__sitemap a::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -0.2em;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+.site-footer__sitemap a:hover::after,
+.site-footer__sitemap a:focus-visible::after { transform: scaleX(1); }
+.site-footer__sitemap a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+.site-footer__meta { display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--fs-small); align-items: center; }
+@media (min-width: 768px) {
+  .site-footer__meta { align-items: flex-end; }
+}
+.site-footer .is-placeholder { color: var(--color-parchment); }
+.site-footer .is-placeholder::after { background: var(--color-ink); }
+
+/* ---- Legal links — added 2026-09-06. Real destinations don't exist yet
+   (the pages themselves are built in Shopify at translation, not here —
+   see the spec's Section 8 "Legal pages — decision" note), so this reuses
+   the exact same dimmed/inert/"— coming soon" treatment already
+   established for the Shop menu link before Shop existed
+   (`[data-unavailable]`, header.css), generalised here rather than a new
+   placeholder language. Distinct from `.is-placeholder` (used for content
+   with no known label yet, e.g. socials) — these have real, known labels
+   and will become real links; only the URL is missing. ---- */
+.site-footer__legal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-1) var(--space-3);
+}
+@media (min-width: 768px) {
+  .site-footer__legal { justify-content: flex-end; }
+}
+.site-footer__legal a[data-unavailable] {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.site-footer__legal a[data-unavailable]::after {
+  content: '— coming soon';
+  font-size: var(--fs-micro);
+  margin-left: var(--space-1);
+}

@@ -1,0 +1,145 @@
+/*
+  Brand tokens.
+
+  Colour: six of the seven values are still sampled from artwork, NOT
+  official brand-guide values — see gaps.md. --color-parchment is the one
+  exception: it's read directly off the fill value baked into the real
+  exported brand assets (assets/svg/*_PARCHMENT.svg, #FCF5EB), which is
+  more authoritative than a manual pixel-sample, so it's corrected here
+  (was #FCF4E9). The rest stay provisional until official values arrive.
+
+  Type: real font files now exist in /assets/svg/ (GeneralSans_Complete,
+  Elizeth, kohinoor-devanagari) — self-hosted via @font-face below.
+  Elizeth's files are named "*Trial*" — per Nilesh (2026-09-04) this is a
+  known temporary state, the full licence is coming. Not a blocker.
+*/
+
+@font-face {
+  font-family: 'General Sans';
+  src: url('../assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Regular.woff2') format('woff2'),
+       url('../assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'General Sans';
+  src: url('../assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Medium.woff2') format('woff2'),
+       url('../assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Medium.woff') format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+/* Semibold — added 2026-09-10 for the hero CTA label only (Nilesh asked
+   for a bolder button than the Regular it was rendering at). Brand system
+   still assigns Medium to headings generally; this weight is loaded for
+   the CTA and is not meant to spread to headings without a decision. The
+   file ships in the same GeneralSans_Complete package already in use. */
+@font-face {
+  font-family: 'General Sans';
+  src: url('../assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Semibold.woff2') format('woff2'),
+       url('../assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Semibold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+/* Elizeth — TRIAL licence files (see note above). Brand guide calls for
+   Medium weight only for sub-headings; that's the sole weight loaded. */
+@font-face {
+  font-family: 'Elizeth';
+  src: url('../assets/svg/Elizeth/ElizethTrial-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Kohinoor Devanagari';
+  src: url('../assets/svg/kohinoor-devanagari/kohinoor-devanagari.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ---- Colour ---- */
+  --color-parchment: #FCF5EB;   /* primary background — verified against real asset fill, see note above */
+  --color-ink: #000000;         /* primary text */
+  --color-clay: #814624;        /* primary accent / CTA — ONLY CTAs use this — PROVISIONAL, sampled */
+  --color-teal: #244242;        /* secondary accent — PROVISIONAL, sampled */
+  --color-olive: #C4CB7E;       /* decorative / section ground only — PROVISIONAL, sampled */
+  --color-rose: #FFCFE2;        /* decorative / section ground only — PROVISIONAL, sampled */
+  --color-mulberry: #912E4A;    /* decorative / section ground only — PROVISIONAL, sampled */
+
+  /* ---- Hero -> Desire shared field (homepage only; see css/home.css for
+     the full mechanic). Defined here, not in home.css, because body's
+     own background (below) reads --dissolve-field-color and body's
+     background applies sitewide — every page needs a safe default even
+     though only index.html ever changes it. PARCHMENT ONLY as of
+     2026-09-15 (Nilesh: "parchment wins") — a Deep Teal alternative
+     existed here via an `html[data-hero-dissolve="teal"]` override
+     (css/home.css) plus a live A/B toggle (index.html); both removed
+     outright, not disabled — see build-log.md Session 42. Kept as named
+     tokens rather than inlining --color-parchment directly in both
+     places that need it (body's background, this section's own field) —
+     that indirection is the actual fix behind "no seam" (Session 38 Pass
+     2); collapsing it back to two hardcoded values would quietly reopen
+     that risk for no benefit now that there's only one option anyway.
+     --desire-accent (the former grandparent-anchor's accent colour) was
+     removed 2026-09-14 alongside that feature — see build-log.md Session
+     40 — nothing reads it anymore. */
+  --dissolve-field-color: var(--color-parchment);
+  --desire-fg: var(--color-ink);
+  --desire-fg-opacity: 0.72;
+
+  /* ---- Type — self-hosted via @font-face above; fallback stacks stay as
+     the safety net (slow network, font-load failure). ---- */
+  --font-heading: 'General Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-subheading: 'Elizeth', Georgia, 'Times New Roman', serif;
+  --font-body: 'General Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-devanagari: 'Kohinoor Devanagari', 'Noto Sans Devanagari', sans-serif;
+
+  /* ---- Type scale — MY IMPLEMENTATION CHOICE, not brand spec.
+     The brand guide gives no numeric sizes anywhere (hierarchy is defined
+     by typeface + weight only, see CKC_brand_system_extracted.md §2).
+     No reference exists to match against, so these values are a build-time
+     judgment call — retune freely, they carry no brand authority. ---- */
+  --fs-hero: clamp(2.5rem, 8vw, 5.5rem);
+  --fs-display: clamp(2.75rem, 10vw, 7rem);
+  --fs-h1: clamp(2rem, 5vw, 3.25rem);
+  --fs-h2: clamp(1.5rem, 3.5vw, 2.25rem);
+  --fs-body: 1rem;
+  --fs-small: 0.8125rem;
+  --fs-micro: 0.6875rem;
+
+  /* ---- Spacing ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --space-6: 4rem;
+  --space-7: 6rem;
+  --space-8: 9rem;
+
+  /* ---- Motion — implementation defaults, not brand-frozen feel ---- */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 0.3s;
+  --dur-medium: 0.6s;
+  --dur-slow: 1s;
+
+  /* ---- Header ---- */
+  --header-height: 88px;
+  --header-height-mobile: 64px;
+
+  /* ---- Z-index scale ----
+     Header sits ABOVE the menu overlay on purpose: the trigger button
+     lives in the header, and it must stay clickable (to close the menu)
+     even while the overlay is open and covering the rest of the screen. */
+  --z-menu: 100;
+  --z-header: 200;
+  --z-cart: 250;
+  --z-cursor: 300;
+  --z-transition: 400;
+  --z-entry: 500;
+}
