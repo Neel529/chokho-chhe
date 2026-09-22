@@ -669,6 +669,178 @@
 .desire__cta .btn__face { white-space: nowrap; }
 
 /* ============================================================
+   HOMEPAGE — SECTION 3 / UNDERSTANDING & PROPOSITION — spec section 5
+   Full concept given directly by Nilesh, 2026-09-22 — see index.html's
+   comment above this section for the spec-sync note and the "flagged,
+   not touched" note about .paradox below now being dead-concept content
+   sitting right after this section.
+
+   Composition, deliberately DIFFERENT from both neighbours so the
+   homepage doesn't repeat a formula three times running (CLAUDE.md §11
+   — "vary section rhythm... not a repeating pattern"): Hero is full-
+   bleed video with overlaid bottom text; Desire is a single centered
+   column with no video; this section is a contained (not full-bleed)
+   video sitting asymmetrically beside a copy column — editorial, "the
+   jar is present, not presented" per the brief, not a cinematic
+   backdrop.
+
+   Motion model: `.understanding` is pinned (GSAP ScrollTrigger,
+   initUnderstandingScrub() in main.js) for a multi-viewport scroll
+   distance. EVERY visual change in this section — video currentTime,
+   every line's own opacity — is computed fresh each scroll tick as a
+   pure function of that one pin's progress (0..1). Nothing here is a
+   CSS transition or a discrete triggered swap; JS sets `opacity` and
+   `--understanding-resolve` directly, every frame, so this deliberately
+   has NO transition/animation properties of its own — layering a CSS
+   transition on top of an already-continuous JS-driven value fights it
+   rather than helping it settle.
+   ============================================================ */
+
+.understanding {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: calc(var(--header-height-mobile) + var(--space-4)) var(--space-4) var(--space-5);
+  background: transparent; /* same reasoning as .desire above — one continuous Parchment field via body, not a second painted rectangle */
+  color: var(--desire-fg);
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .understanding {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-7);
+    padding: var(--header-height) var(--space-6);
+  }
+}
+
+/* Contained video box — NOT full-bleed (see file header comment). Plain
+   rectangle, no card chrome (no border-radius/shadow — brand has no
+   "card" language, CLAUDE.md §7). */
+.understanding__media {
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  height: 42vh;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-teal) 12%, transparent); /* faint ground so the box reads as intentional before/while the clip loads (lazy-loaded, see main.js) */
+}
+@media (min-width: 768px) {
+  .understanding__media { width: 54%; height: min(76vh, 620px); }
+}
+.understanding__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Dims the video as the CLOSING line resolves — driven by
+   --understanding-resolve (set every scroll tick in main.js to the
+   closing line's own crossfade opacity, 0..1), not a separate timer or
+   scroll trigger. Parchment, not black — stays inside the brand's own
+   palette rather than a generic dark-scrim convention. */
+.understanding__media-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--color-parchment);
+  opacity: var(--understanding-resolve, 0);
+  pointer-events: none;
+}
+.understanding__video-badge {
+  position: absolute;
+  z-index: 2;
+  bottom: var(--space-3);
+  right: var(--space-3);
+  font-size: 0.625rem;
+}
+
+.understanding__copy {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+/* Fixed height, same convention as .desire__line-wrap (home.css, above)
+   and for the same reason: sized generously for the tallest state up
+   front rather than JS-measured per swap, so nothing else in the
+   section shifts as lines crossfade. */
+.understanding__lines {
+  position: relative;
+  width: 100%;
+  min-height: calc(3.2rem + 1.3em * 2);
+}
+.understanding__line {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2);
+  opacity: 0; /* JS (main.js) sets the real value every scroll tick; this is only the pre-JS/no-JS default */
+}
+.understanding__moment {
+  font-family: var(--font-body);
+  font-size: var(--fs-small);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+/* TOGGLE — data-moment-label="off" on .understanding (index.html) hides
+   the Morning/Afternoon/Evening/Night tag entirely, one attribute edit,
+   to test the copy implying the moment with no label at all. */
+.understanding[data-moment-label="off"] .understanding__moment { display: none; }
+
+.understanding__text {
+  font-family: var(--font-subheading);
+  font-size: clamp(1.9rem, 5.5vw, 3.4rem);
+  line-height: 1.3;
+  max-width: 13ch;
+}
+/* The fifth, closing state — a different register from the four moment
+   lines (the exhale, not another beat): quieter and smaller, centered
+   rather than left-set, bridging to the hero's own Devanagari line. */
+.understanding__line--closing {
+  align-items: center;
+  text-align: center;
+}
+.understanding__line--closing .understanding__text {
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  max-width: 18ch;
+  opacity: 0.88;
+}
+
+/* prefers-reduced-motion fallback — main.js adds this class instead of
+   ever creating the pin/scrub ScrollTrigger at all (same per-feature
+   policy as initHeroVideo()/initTrustParallax(), not the sitewide CSS
+   duration override, which doesn't reach JS-driven `style.opacity`
+   writes). All five lines become normal, stacked, fully-opaque flow —
+   fully readable with zero animation, per the brief. */
+.understanding--static {
+  min-height: auto;
+}
+@media (min-width: 768px) {
+  .understanding--static { flex-direction: column; align-items: stretch; }
+}
+.understanding--static .understanding__lines {
+  position: static;
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.understanding--static .understanding__line {
+  position: static;
+  opacity: 1 !important;
+}
+.understanding--static .understanding__media-scrim { display: none; }
+
+/* ============================================================
    HOMEPAGE — CATEGORY PARADOX — spec section 4
    Status: typographic treatment/interaction frozen, copy open.
    ============================================================ */

@@ -411,6 +411,81 @@
   </section>
 
   <!-- ============================================================
+       SECTION 3 — UNDERSTANDING / PROPOSITION — spec section 5
+       Status in the master spec: 🔴 "NOT YET DESIGNED — scope fenced,
+       mechanism open." That entry predates this round — Nilesh gave the
+       full concept, copy, and technical brief directly (2026-09-22),
+       same pattern already used for the Desire beat's own concept (see
+       gaps.md, Session 13). Logged in gaps.md as a spec-sync item; the
+       spec file itself isn't edited this round (build-only brief).
+
+       Concept: a scroll-scrubbed product beat. The jar (video) is the
+       constant; scroll position drives its currentTime directly. Copy
+       is the protagonist — four moment-of-day lines crossfade in as a
+       continuous function of the SAME scroll progress, then a fifth
+       "closing" line resolves the section. This is the payoff to
+       Section 2 ("someone who loved me would approve") — it adds "and
+       it fits my whole day," bridging to the hero's own Hindi line.
+
+       COPY: the four moment lines below reuse the exact same five
+       Hinglish statements already frozen for Section 2 (spec section 4)
+       — deliberate reuse per Nilesh's brief, not a copy-paste error.
+       Same native-Hindi-reader proofing gap applies here (gaps.md).
+
+       MOMENT LABEL TOGGLE: data-moment-label="on" on the <section>
+       below shows "Morning/Afternoon/Evening/Night" above each line;
+       flip it to "off" (one attribute edit, no CSS/JS change needed —
+       see css/home.css) to test the copy implying the moment with no
+       label at all, per Nilesh's ask to compare both.
+
+       VIDEO: two mock scrub clips exist in assets/video/ purely to A/B
+       which one scrubs more smoothly — see the ONE-LINE SWAP
+       (ACTIVE_SOURCE) in main.js's initUnderstandingScrub(). Neither is
+       final footage — see .understanding__video-badge below.
+
+       FLAGGED, NOT TOUCHED: the very next section in the DOM (.paradox,
+       directly below this one) is the abandoned "Category Paradox"
+       concept the master spec explicitly calls dead (spec section 4:
+       "That idea is dead — do not revive it" — replaced by the Desire
+       beat above it). It looks like leftover content nobody removed
+       when Section 2 replaced it. Left in place — deleting existing
+       homepage content isn't this round's brief — but flagged for
+       Nilesh to confirm removal, especially now that Section 3 exists
+       right where the spec says the homepage should end (hero -> desire
+       -> Section 3, three sections, no more, spec section 5).
+       ============================================================ -->
+  <section class="understanding" data-header-theme="light" data-moment-label="on" id="understandingSection">
+    <div class="understanding__media">
+      <video class="understanding__video" id="understandingVideo" muted playsinline preload="none" aria-hidden="true"></video>
+      <div class="understanding__media-scrim" aria-hidden="true"></div>
+      <span class="understanding__video-badge is-placeholder">Mock scrub clip — not final</span>
+    </div>
+    <div class="understanding__copy">
+      <div class="understanding__lines" id="understandingLines">
+        <p class="understanding__line" data-state="0" lang="hi-Latn">
+          <span class="understanding__moment">Morning</span>
+          <span class="understanding__text">Nani ne toh pehle hi bola tha</span>
+        </p>
+        <p class="understanding__line" data-state="1" lang="hi-Latn">
+          <span class="understanding__moment">Afternoon</span>
+          <span class="understanding__text">Nani ko ye pasand aata</span>
+        </p>
+        <p class="understanding__line" data-state="2" lang="hi-Latn">
+          <span class="understanding__moment">Evening</span>
+          <span class="understanding__text">Dadi iske liye haan kar detin</span>
+        </p>
+        <p class="understanding__line" data-state="3" lang="hi-Latn">
+          <span class="understanding__moment">Night</span>
+          <span class="understanding__text">Dada toh kehte hi the!</span>
+        </p>
+        <p class="understanding__line understanding__line--closing" data-state="4" lang="hi-Latn">
+          <span class="understanding__text">Dadi ki baat ab sense bana rahi hai</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================
        CATEGORY PARADOX — spec section 4
        Status: 🟡 typographic treatment/interaction decided, copy not.
        No eyebrow/kicker line here — spec doesn't call for one; an earlier

@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // after the dispatch would simply miss it.
   initDesireBeat();
   initHeroDesireTransition();
+  initUnderstandingScrub();
   initContactForm();
   initTrustFormulation();
   initTrustParallax();
@@ -617,6 +618,189 @@ function initDesireBeat() {
     });
   }, { threshold: 0 });
   io.observe(wrap);
+}
+
+/*
+  Homepage Section 3 — Understanding/Proposition, spec section 5. Full
+  concept given directly by Nilesh, 2026-09-22 (the spec file itself
+  still says "NOT YET DESIGNED" — see gaps.md and the big index.html
+  comment above this section's markup): a scroll-scrubbed product beat.
+  `.understanding` pins for a multi-viewport scroll distance; EVERY
+  visible change across that whole pin — the jar video's currentTime,
+  each of the five stacked copy lines' own opacity, the closing scrim —
+  is computed fresh, every scroll tick, as a pure function of that one
+  pin's progress (0..1). Nothing here is a discrete triggered swap; nothing
+  waits for a previous tween to finish. That's what makes video motion and
+  copy transitions read as one continuous timeline instead of two
+  separately-timed systems that happen to overlap — and what the brief's
+  "must never feel the site stopped responding" is actually asking for.
+
+  SCRUB_SOURCES / ACTIVE_SOURCE — the ONE-LINE SWAP Nilesh asked for, to
+  A/B which mock clip scrubs more smoothly, and later to drop in the real
+  asset. Change ACTIVE_SOURCE's value (or add a new key) — nothing else
+  in this function needs to change.
+
+  Both current mock files were probed directly before building this (not
+  assumed): try1 is 1280x720, 10.0s, 24fps/240 frames; try2 is 640x360,
+  8.0s, 24fps/192 frames. Both are H.264 with exactly ONE keyframe for
+  the ENTIRE clip (a normal "optimize for file size" export, not one
+  built for scrubbing) — every seek mid-clip means the browser decodes
+  forward from that single keyframe, which is exactly the encode shape
+  that stutters on scrub, worst on mobile. Flagged in gaps.md: the FINAL
+  video should be re-exported with frequent keyframes (ideally every
+  1-5 frames, "all-intra"/"every frame a keyframe" if the export tool
+  offers it) specifically for this use — a normal export, however good
+  it looks, will not scrub as smoothly as this technique needs.
+*/
+function initUnderstandingScrub() {
+  const section = document.getElementById('understandingSection');
+  const video = document.getElementById('understandingVideo');
+  const linesWrap = document.getElementById('understandingLines');
+  if (!section || !video || !linesWrap) return;
+
+  const SCRUB_SOURCES = {
+    try1: 'assets/video/Scroll_Scrub_try1mp4.mp4',
+    try2: 'assets/video/Scroll_scrub_try2.mp4',
+  };
+  const ACTIVE_SOURCE = 'try1'; // <-- ONE-LINE SWAP: 'try1' | 'try2' | a real asset path once one exists
+
+  const lines = Array.from(linesWrap.querySelectorAll('.understanding__line'));
+  // Per-state scroll weight, in the same order as the data-state markup
+  // (0 Morning .. 3 Night, 4 the closing line) — editable independently;
+  // "timings adjustable, not necessarily equal" per the brief. Raise a
+  // single value to give that state more scroll distance/dwell time.
+  const STATE_WEIGHTS = [1, 1, 1, 1, 0.8];
+  const SEGMENT_VH = 90; // scroll distance (vh) per weight=1 state — raise/lower to slow/speed the WHOLE timeline uniformly
+  const CROSSFADE_FRACTION = 0.3; // portion of a state's own span spent fading in/out; the rest is a flat, fully-opaque hold
+
+  const totalWeight = STATE_WEIGHTS.reduce((a, b) => a + b, 0);
+  const bounds = []; // [start, end) in overall 0..1 pin progress, one pair per state, same order as `lines`
+  let acc = 0;
+  STATE_WEIGHTS.forEach((w) => {
+    const start = acc / totalWeight;
+    acc += w;
+    bounds.push([start, acc / totalWeight]);
+  });
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function loadVideo() {
+    if (video.src) return;
+    video.src = SCRUB_SOURCES[ACTIVE_SOURCE] || ACTIVE_SOURCE;
+    video.load();
+  }
+
+  if (reduced) {
+    // Same policy as initHeroVideo(): leave it on its first frame, don't
+    // autoplay, don't scroll-tie anything. All five lines become normal,
+    // stacked, fully-opaque flow via the .understanding--static class
+    // (css/home.css) — fully readable with zero animation.
+    section.classList.add('understanding--static');
+    loadVideo();
+    return;
+  }
+
+  // Lazy-load: the clip isn't fetched until the section is getting
+  // close, not on page load — slower-connection requirement (brief +
+  // CLAUDE.md §11). rootMargin gives it an 800px head start so it's
+  // ready by the time the pin actually engages.
+  const lazyIo = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        loadVideo();
+        lazyIo.disconnect();
+      }
+    });
+  }, { rootMargin: '800px 0px' });
+  lazyIo.observe(section);
+
+  let duration = 0;
+  let primed = false;
+  video.addEventListener('loadedmetadata', () => {
+    duration = video.duration || 0;
+    // Some mobile browsers (notably iOS Safari) won't seek reliably on a
+    // video that has never actually played. Muted autoplay is allowed;
+    // immediately pausing keeps it on frame 0 until scroll drives it.
+    // Fails silently if the browser still blocks it — currentTime
+    // scrubbing still works either way, just possibly less smoothly on
+    // whichever browser that happens on.
+    if (!primed) {
+      primed = true;
+      video.play().then(() => video.pause()).catch(() => {});
+    }
+  });
+
+  const canFastSeek = typeof video.fastSeek === 'function';
+  let lastTarget = -1;
+
+  function updateVideo(progress) {
+    if (!duration) return;
+    const target = progress * duration;
+    if (Math.abs(target - lastTarget) < 1 / 60) return; // skip sub-frame no-op seeks
+    lastTarget = target;
+    try {
+      // fastSeek trades frame-accuracy for seek speed — the right trade
+      // here (a continuously-scrubbed background clip, not a player
+      // where the exact frame matters), and it measurably helps seek
+      // latency on Safari in particular.
+      if (canFastSeek) video.fastSeek(target);
+      else video.currentTime = target;
+    } catch (e) {
+      // Seeking can throw if called before the video is seekable yet;
+      // safe to ignore, the next scroll tick just retries.
+    }
+  }
+
+  // Trapezoid opacity: ramps in over the first CROSSFADE_FRACTION of the
+  // state's own span, holds at 1, ramps out over the last
+  // CROSSFADE_FRACTION — except the very first state (no fade-in, it's
+  // already the one showing at progress 0) and the very last state (no
+  // fade-out, it just holds once reached, all the way to progress 1).
+  // Adjacent states' ramps overlap in scroll-progress terms (one state's
+  // fade-out IS the next one's fade-in window), which is what makes the
+  // whole thing read as continuous crossfading rather than sequential
+  // blackouts.
+  function crossfadeOpacity(progress, stateBounds, isFirst, isLast) {
+    const [start, end] = stateBounds;
+    const span = end - start;
+    if (span <= 0) return 1;
+    const t = Math.max(0, Math.min(1, (progress - start) / span));
+    if (progress < start) return isFirst ? 1 : 0;
+    if (progress >= end) return isLast ? 1 : 0;
+    const fadeIn = isFirst ? 1 : Math.min(1, t / CROSSFADE_FRACTION);
+    const fadeOut = isLast ? 1 : Math.min(1, (1 - t) / CROSSFADE_FRACTION);
+    return Math.min(fadeIn, fadeOut);
+  }
+
+  function updateCopy(progress) {
+    const lastIndex = lines.length - 1;
+    lines.forEach((el, i) => {
+      const opacity = crossfadeOpacity(progress, bounds[i], i === 0, i === lastIndex);
+      el.style.opacity = opacity;
+      if (i === lastIndex) section.style.setProperty('--understanding-resolve', opacity);
+    });
+  }
+
+  // Correct initial paint immediately (progress 0), rather than waiting
+  // on ScrollTrigger's own first onUpdate — matches every other section
+  // on this page rendering its real starting state straight from load.
+  updateCopy(0);
+
+  ScrollTrigger.create({
+    trigger: section,
+    start: 'top top',
+    // Function-based, not a bare 'vh' string (ScrollTrigger's shorthand
+    // doesn't resolve vh units) — recomputed from the live viewport
+    // height on every refresh (orientation change, URL-bar resize, font-
+    // swap reflow), same pattern as initHeaderGroundTheme()'s headerBand().
+    end: () => '+=' + Math.round((window.innerHeight * SEGMENT_VH * totalWeight) / 100),
+    pin: true,
+    scrub: true,
+    onUpdate: (self) => {
+      updateVideo(self.progress);
+      updateCopy(self.progress);
+    },
+  });
 }
 
 function initContactForm() {
