@@ -39,8 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Self-hosted fonts use font-display: swap (variables.css), so fallback
   // fonts render first and metric-swap in — that reflows heights (headings,
   // form fields, footer stack), which can leave every ScrollTrigger start/
-  // end position (paradox reveal, header ground-theme switching) computed
-  // against the pre-swap layout. Re-measure once real fonts land.
+  // end position (data-reveal elements, header ground-theme switching)
+  // computed against the pre-swap layout. Re-measure once real fonts land.
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => ScrollTrigger.refresh());
   }
@@ -48,37 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initScrollReveals() {
-  // Category-paradox headline — spec section 4. The word-by-word mask
-  // reveal is the spec-decided interaction; this used to only run when
-  // the headline was real copy (gated on NOT having `is-placeholder`),
-  // which meant the decided interaction silently never fired while the
-  // copy is a placeholder — exactly the state it's in now. Fixed
-  // 2026-09-06: run it whenever the real .word/span structure exists,
-  // regardless of placeholder status, so it's the same interaction either
-  // way — only the wording changes once real copy is approved.
-  const paradoxLine = document.querySelector('.paradox__line');
-  if (paradoxLine) {
-    const words = paradoxLine.querySelectorAll('.word > span');
-    if (words.length) {
-      gsap.set(words, { yPercent: 110 });
-      gsap.to(words, {
-        yPercent: 0,
-        duration: 0.9,
-        ease: 'power4.out',
-        stagger: 0.06,
-        scrollTrigger: { trigger: paradoxLine, start: 'top 80%' },
-      });
-    } else {
-      // Fallback only for markup that hasn't been split into words yet.
-      gsap.from(paradoxLine, {
-        opacity: 0,
-        y: 24,
-        duration: 0.8,
-        ease: 'power2.out',
-        scrollTrigger: { trigger: paradoxLine, start: 'top 80%' },
-      });
-    }
-  }
+  // Category-paradox headline reveal REMOVED 2026-09-23, per Nilesh's
+  // direct instruction — `.paradox` itself (dead-concept content, spec
+  // section 4 calls it explicitly dead) is removed from index.html/
+  // home.css this same round; see build-log.md Session 50. This
+  // function's generic [data-reveal] loop below is untouched — it's
+  // shared by other real sections sitewide, not paradox-specific.
 
   gsap.utils.toArray('[data-reveal]').forEach((el) => {
     gsap.from(el, {
