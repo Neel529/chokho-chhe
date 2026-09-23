@@ -362,44 +362,68 @@
 
        .desire__jar-id ("ChoKho Chhe / AmlaPrash") is real brand naming,
        not placeholder text — small, quiet, answers "what is this,"
-       nothing else (no ingredients/claims — see CLAUDE.md §9). -->
-  <section class="desire" data-header-theme="light">
+       nothing else (no ingredients/claims — see CLAUDE.md §9).
+
+       REWORKED 2026-09-23 — Nilesh's direct brief: static jar PNG + a
+       small centred image is OUT; Section 2 is now a full-bleed scroll-
+       scrubbed video, matching the mechanism already proven in Section 3
+       (initUnderstandingScrub) but applied here as the section's actual
+       background, not a contained side panel. `.desire` pins (GSAP
+       ScrollTrigger, initDesireBeat() in main.js) for a multi-viewport
+       scroll distance; the video's currentTime AND which of the 5
+       Hinglish statements is showing are both driven off the SAME pin
+       progress every scroll tick — "jar-rotation and copy-changes move
+       together as one unified scroll-driven timeline," per the brief.
+       The copy change itself is a DISCRETE trigger (the exact same
+       rising-mask reel animation this section already had, just fired
+       when scroll crosses each statement's zone boundary instead of a
+       3s timer) — not a continuous per-word scrub — see main.js for why.
+
+       PIN MECHANISM NOTE (Shopify-portability, item 5 of the brief):
+       this is GSAP ScrollTrigger's pin:true + scrub:true — the browser's
+       own native scroll continues to drive it via transform, NOT a JS
+       wheel/touchmove listener that intercepts and replaces scrolling.
+       That distinction is what "natural scroll, not scroll-hijacking"
+       means in practice. Same technique, same library, as Section 3 —
+       nothing new to port.
+
+       MANUAL SHUFFLE BUTTON REMOVED, not carried over: the old dice-icon
+       button advanced the statement on a click, on its own timer-driven
+       cycle. Once state is scroll-position-locked (this round), a manual
+       "advance" control would fight the scroll-driven state instead of
+       complementing it — flagged here as a call made this round, not
+       silently dropped.
+
+       VIDEO: full-bleed background, id="desireVideo". Uses the SAME
+       one-line ACTIVE_SOURCE swap pattern as Section 3
+       (DESIRE_SCRUB_SOURCES / DESIRE_ACTIVE_SOURCE in main.js) — now
+       with 4 candidates: the original mock clip plus 3 ffmpeg-re-encoded
+       variants built this round specifically to test scrub smoothness
+       (all-intra native, keyframe-every-5 native, all-intra downscaled)
+       — see main.js's comment above initDesireBeat() for the full spec
+       sheet of each. Marked with a visible mock badge; none of the 4 is
+       final footage.
+
+       TEXT-OVER-VIDEO SCRIM: `.desire__media-scrim`, same principle as
+       `.hero__media::after` (a dark gradient behind the copy for
+       legibility over moving footage) — see css/home.css. Text itself
+       now sets colour to parchment directly rather than via
+       `--desire-fg` (that token existed for the OLD parchment/deep-teal
+       flat-field toggle, which doesn't apply to a video ground). -->
+  <section class="desire" data-header-theme="dark" id="desireSection">
+    <div class="desire__media">
+      <video class="desire__video" id="desireVideo" muted playsinline preload="metadata" aria-hidden="true"></video>
+      <div class="desire__media-scrim" aria-hidden="true"></div>
+      <span class="desire__video-badge is-placeholder">Mock scrub clip — not final</span>
+    </div>
     <div class="desire__inner">
-      <div class="desire__jar">
-        <div class="desire__jar-media">
-          <!-- MOCK JAR PNG — placeholder, 2026-09-15. Nilesh's supplied
-               stand-in (assets/video/Try_Jar_1.png, transparent PNG,
-               "Jadi & Buty" label — a mock brand, not ChoKho Chhe) swapped
-               in for the earlier SVG silhouette per his direct
-               instruction. Still a MOCK, not final photography — keep
-               .desire__jar-badge below, don't remove it on this swap (an
-               earlier comment round said remove-on-swap; superseded —
-               only remove it once the REAL editorial photo lands, not for
-               a mock-for-mock swap like this one). VIDEO SWAP LATER: if/
-               when Nilesh supplies the video instead, replace this <img>
-               with <video class="desire__jar-image" muted loop playsinline
-               aria-hidden="true"><source src="..."></video> — same class,
-               same slot, .desire__jar-media's sizing/tween rules don't
-               change either way. -->
-          <img class="desire__jar-image" src="assets/video/Try_Jar_1.png" alt="ChoKho Chhe Amlaprash jar (mock placeholder image)">
-          <span class="desire__jar-badge is-placeholder">Mock jar — not final</span>
-        </div>
-        <p class="desire__jar-id">ChoKho Chhe <span aria-hidden="true">/</span> AmlaPrash</p>
-      </div>
+      <p class="desire__jar-id">ChoKho Chhe <span aria-hidden="true">/</span> AmlaPrash</p>
       <div class="desire__stage">
         <div class="desire__line-wrap" id="desireLineWrap" aria-live="polite">
           <p class="desire__line" lang="hi-Latn">
             <span class="word"><span>Nani</span></span> <span class="word"><span>ko</span></span> <span class="word"><span>ye</span></span> <span class="word"><span>pasand</span></span> <span class="word"><span>aata</span></span>
           </p>
         </div>
-        <button type="button" class="desire__shuffle" id="desireShuffle" aria-label="Show another line">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M3 6h4.2c1 0 1.9.5 2.5 1.4L15 18.6c.6.9 1.5 1.4 2.5 1.4H21"/>
-            <path d="M17 3l4 3-4 3"/>
-            <path d="M3 18h4.2c1 0 1.9-.5 2.5-1.4L11 14"/>
-            <path d="M17 21l4-3-4-3"/>
-          </svg>
-        </button>
       </div>
       <div class="desire__actions">
         <a href="shop.html" class="btn btn--on-dark desire__cta" id="desireCta">

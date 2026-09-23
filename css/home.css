@@ -303,194 +303,103 @@
    flagged here so this paragraph doesn't contradict `.desire` below it.
    ============================================================ */
 
+/* ============================================================
+   REWORKED 2026-09-23 — full-bleed scroll-scrubbed video ground,
+   replacing the earlier static centred jar-image composition (all of
+   that history — the asymmetric-vs-centred call, the jar's size/position
+   passes — is kept below in the old comments for the record, but the
+   layout rules those comments described are gone, not overridden).
+   `.desire` is now the SAME pin+overlay pattern as `.hero` and
+   `.understanding`: position:relative, a full-bleed absolutely-
+   positioned media layer (z-index 0), an overlay content column
+   (z-index 2) centred within it. See initDesireBeat() (main.js) for the
+   scroll-scrub mechanics; this file only holds the resulting layout.
+   ============================================================ */
 .desire {
+  position: relative;
   min-height: 100svh;
   display: flex;
-  /* HORIZONTALLY centered — changed 2026-09-14, Nilesh's direct
-     instruction for the product-jar round, overriding this section's
-     earlier "asymmetric, left-weighted" composition (that was a build-
-     time quality-bar call from round 4, not a spec freeze — a direct
-     instruction this round supersedes it). justify-content:center here
-     is what actually moves .desire__inner off the left edge; the old
-     asymmetric build relied on the ABSENCE of this rule (default
-     flex-start) plus a redundant margin-right:auto on .desire__inner,
-     both removed below. */
+  align-items: center;
   justify-content: center;
-  /* VERTICALLY top-anchored, not centered — changed again same day,
-     same-round follow-up correction from Nilesh: the jar (first child of
-     .desire__inner) should sit near the actual TOP of the section, not
-     centered — centering the whole jar+copy+CTA column as a group (the
-     first version of this rule) put the jar too far down as a side
-     effect. `.desire` is a ROW-direction flex container (its one child
-     is .desire__inner), so align-items is the vertical/cross axis here —
-     flex-start is what moves the column to the top. */
-  align-items: flex-start;
-  /* Top padding now needs to clear the fixed header explicitly, since
-     the column no longer centers itself clear of it automatically —
-     same pattern .hero already uses (--header-height-mobile/
-     --header-height + breathing room), not a bare --space-6 anymore. */
-  padding: calc(var(--header-height-mobile) + var(--space-4)) var(--space-4) var(--space-6);
-  /* Deliberately NO background-color here — not an oversight. body
-     (css/base.css) paints --dissolve-field-color as ONE continuous
-     surface behind the whole homepage; .desire staying transparent is
-     what lets that single surface show through instead of a second,
-     separately-painted rectangle that only happens to match it. See the
-     file header comment above for the full reasoning (this replaced an
-     earlier pass that DID set this section's own matching background,
-     which Nilesh confirmed still left a structural seam). */
-  background: transparent;
-  color: var(--desire-fg); /* base text colour — see .desire__shuffle below, which relies on this via currentColor */
+  overflow: hidden;
+  padding: calc(var(--header-height-mobile) + var(--space-4)) var(--space-4);
+  /* Text sits on a dark scrim over moving video now, not a flat
+     parchment/deep-teal field — --desire-fg (ink-on-light, built for
+     that old flat-field toggle) no longer applies. Parchment directly,
+     same convention as .hero__content's light-on-dark-video text. */
+  color: var(--color-parchment);
 }
 @media (min-width: 768px) {
-  /* Full shorthand (not just padding-top) so this doesn't fight the
-     mobile rule's own shorthand above — was two separate media-query
-     blocks that silently conflicted (the plain --space-7 one, unchanged
-     since round 1, was overriding this round's header-aware top value
-     since it came second in the cascade); merged into one, caught before
-     shipping by checking computed padding-top in-browser, not assumed
-     from reading the rules alone. */
-  .desire { padding: calc(var(--header-height) + var(--space-5)) var(--space-6) var(--space-7); }
+  .desire { padding: var(--header-height) var(--space-6); }
+}
+
+/* Full-bleed video layer — same structure as .hero__media /
+   .understanding__media: absolute, fills the section, sits behind the
+   overlay copy. Faint ground colour shows only for the instant before
+   the (preload="metadata") video has a frame to paint. */
+.desire__media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: var(--color-teal);
+  will-change: opacity, filter; /* scroll-scrubbed together with the hero video's own dissolve/blur — see initHeroDesireTransition(), main.js; this wrapper replaces the old .desire__jar-media as that tween's target */
+}
+.desire__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Text-legibility scrim — same principle as .hero__media::after: a dark
+   gradient behind the copy so it stays readable over moving footage,
+   not a flat tint over the whole frame. Strongest in the vertical
+   middle band (where .desire__inner sits, centred), lighter at the very
+   top/bottom edges so the video itself still reads as full-bleed, not
+   fully obscured. */
+.desire__media-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.2) 0%,
+    rgba(0, 0, 0, 0.48) 32%,
+    rgba(0, 0, 0, 0.48) 68%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  pointer-events: none;
+}
+.desire__video-badge {
+  position: absolute;
+  z-index: 2;
+  bottom: var(--space-3);
+  right: var(--space-3);
+  font-size: 0.625rem;
+  color: var(--color-parchment);
 }
 
 .desire__inner {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
-  /* Tightened from --space-6 (2026-09-14) — the new .desire__jar sits
-     above .desire__stage in this same column and needs to read as part
-     of "one piece" with the copy below it ("jar and copy feeling like
-     one piece, not image + separate text block" — Nilesh), not spaced
-     apart the same amount as the deliberate copy-to-CTA breathing room
-     the --space-6 value was originally tuned for. One value still
-     applies uniformly between all three children (jar/stage/actions) —
-     simplest correct fix; a per-pair gap would need an extra wrapper for
-     no real benefit at this composition's scale. */
+  align-items: flex-start;
   gap: var(--space-4);
-  /* Outer safety cap only — NOT the line-wrapping control (that's
-     .desire__line's own max-width below, in its own ch context). Bug
-     found while verifying (not assumed): a `ch`-based max-width set
-     HERE resolves against this element's inherited ~16px body font, not
-     against .desire__line's much larger Elizeth clamp() — completely
-     decoupled from the text that's actually wrapping. That made desktop
-     (bigger line font, same small ch-based pixel width) wrap WORSE than
-     mobile, the opposite of "fuller horizontally." Fixed by moving the
-     ch-based cap onto .desire__line itself, where ch means something. */
   max-width: min(90vw, 46rem);
 }
-/* The old "Left third, rest of the section left open" asymmetric rule
-   (margin-right: auto at 768px) is REMOVED, not overridden — .desire's
-   own justify-content: center (above) now does the centering at every
-   breakpoint, uniformly, per Nilesh's direct instruction this round. */
 
-/* ============================================================
-   DESIRE BEAT — product jar anchor (new, 2026-09-14; repositioned +
-   asset-slot rebuilt, same day, follow-up round)
-   Still, non-performing anchor: opacity + blur only, tweened on the SAME
-   scroll-scrubbed timeline as the hero video's own dissolve/blur (see
-   initHeroDesireTransition(), main.js) — resolves into focus exactly as
-   the video fades, never moves/scales/settles-aside on its own. Its
-   on-screen position otherwise comes from ordinary scrolling (the
-   section itself scrolling into view) — no separate entrance tween.
-   Stacked FIRST in .desire__inner's column — now with `.desire` itself
-   top-aligned (see that rule above), not centered, so the jar sits near
-   the actual TOP of the section, per Nilesh's direct correction — the
-   first pass's "upper-center" was only a side effect of centering the
-   whole jar+copy+CTA column as a group, which read as too far down.
-   ============================================================ */
-.desire__jar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* Room for .desire__jar-badge below the image (see that rule) plus its
-     own .is-placeholder::after tag above IT — space-5, not the tighter
-     space-2 used elsewhere in this block, specifically so the badge
-     stack doesn't crowd .desire__jar-id right below it (verified by
-     screenshot — space-4 still let the two-line badge tag touch the
-     identity text). */
-  gap: var(--space-5);
-}
-.desire__jar-media {
-  position: relative;
-  display: inline-flex;
-  /* Both scroll-scrubbed together with the hero video's own blur/opacity
-     — see main.js. No CSS default opacity/blur override here, same
-     convention as .hero__video: the GSAP fromTo() sets the correct
-     progress-matched value immediately on creation, and under
-     prefers-reduced-motion (where that tween is never created at all,
-     see initHeroDesireTransition()) this element simply stays at its
-     plain CSS state — fully opaque, unblurred — which is the right
-     reduced-motion fallback (visible, just without the scroll-tied
-     resolve), matching the video's own reduced-motion behaviour. This
-     wrapper is the stable GSAP target regardless of what's inside it
-     (placeholder / img / video, see below) — swapping the child element
-     never needs a main.js change. */
-  will-change: opacity, filter;
-}
-/* Sizing box for the jar asset. Fixed width+height (not just height with
-   width:auto) so object-fit:contain (below) has an actual 2D box to fit
-   the image INTO without cropping or distorting — letterboxing on
-   whichever axis the asset's own aspect ratio doesn't fill, which is
-   also what keeps this robust for the next swap (a differently-shaped
-   real photo, or a video) without retuning.
-
-   ENLARGED 2026-09-15, first pass (Nilesh: too small to read/judge,
-   wanted "roughly double... feel present and substantial") — floor and
-   ceiling roughly doubled from the original placeholder-era box
-   (160/280 -> 260/560 width, 120/220 -> 195/420 height), same 4:3 ratio
-   carried through.
-
-   ENLARGED AGAIN, same day, second pass — Nilesh: still moderately
-   bigger ("a bit larger still... substantial and present"), explicitly
-   NOT another doubling this time. Bumped ~9-14% on top of the first
-   pass (260/560 -> 265/640 width, 195/420 -> 199/480 height, 75vw/56vw
-   -> 82vw/61.5vw) rather than repeating the same "roughly double" jump
-   — the ceiling/vw values do the visible work at realistic breakpoints;
-   the floor barely moved (260->265px) since it only ever activates
-   below ~320px viewport width, where headroom is genuinely tight.
-   Re-checked against the same narrow-phone safety margin as the first
-   pass, one step narrower this time (320px, not just 360px, since the
-   floor itself moved): .desire's side padding leaves 272px available
-   at a 320px viewport; the 265px floor clears that with 7px to spare.
-   At the primary test width (390px) the used value is 82vw = 319.8px,
-   well inside the 342px available there. */
-.desire__jar-image {
-  width: clamp(265px, 82vw, 640px);
-  height: clamp(199px, 61.5vw, 480px);
-  object-fit: contain;
-}
-/* Persistent placeholder tag — same convention as .hero__mock-badge
-   (home.css, hero block): a small corner marker, not a dashed box around
-   the whole image (which would fight the "judge composition, not the
-   placeholder's beauty" instruction by drawing extra attention to the
-   box itself rather than the shape/scale it's standing in for). Sits
-   BELOW the jar's own box (not overlapping a corner of it, unlike a
-   first-pass version of this rule) — .is-placeholder's own ::after tag
-   (base.css) floats above THIS element's top edge, and with the badge
-   overlapping the jar shape that tag collided with the placeholder
-   silhouette itself in a screenshot check; moving the badge fully clear
-   of the jar's box gives the ::after tag room too, avoiding both
-   collisions with one fix. Text avoids repeating "placeholder" (the
-   ::after tag already says it) — same wording pattern as
-   .hero__mock-badge ("Mock footage — not final"). */
-.desire__jar-badge {
-  position: absolute;
-  bottom: -1.9rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.6rem;
-  white-space: nowrap;
-}
 /* Quiet product identity — "what is this," nothing else (CLAUDE.md §9:
    no ingredients/claims here). Real brand naming, not placeholder text —
-   deliberately NOT wrapped in .is-placeholder. Sits at reduced opacity,
-   same --desire-fg token as the rest of the copy so it moves with the
-   Parchment/Deep Teal toggle automatically. */
+   deliberately NOT wrapped in .is-placeholder. Parchment at reduced
+   opacity, same as the rest of the overlay copy. */
 .desire__jar-id {
   font-family: var(--font-body);
   font-size: var(--fs-small);
   letter-spacing: 0.06em;
-  color: var(--desire-fg);
-  opacity: 0.65;
-  text-align: center;
+  color: var(--color-parchment);
+  opacity: 0.7;
 }
 
 .desire__stage {
@@ -499,6 +408,15 @@
   align-items: flex-start;
   gap: var(--space-5);
 }
+
+/* prefers-reduced-motion fallback (main.js adds this class instead of
+   ever creating the pin/scrub ScrollTrigger — same per-feature policy as
+   initUnderstandingScrub()/initHeroVideo()): section unpins to normal
+   flow height, video stays on its first loaded frame (no scrub tie), and
+   only the FIRST statement shows — fully readable, static, no reel
+   animation ever runs. */
+.desire--static { min-height: auto; padding-top: calc(var(--header-height-mobile) + var(--space-6)); padding-bottom: var(--space-6); }
+@media (min-width: 768px) { .desire--static { padding-top: calc(var(--header-height) + var(--space-7)); padding-bottom: var(--space-7); } }
 
 /* Wraps the swapping line(s) — see initDesireBeat(). position:relative
    is load-bearing: the incoming line during a shuffle is positioned
@@ -606,40 +524,25 @@
   font-family: var(--font-body);
 }
 
-/* Every word (including the former "anchor" word 0 — that feature was
-   removed 2026-09-14, see build-log.md Session 40) sits at a slightly
-   receded opacity, "a remembered thought" rather than shouting — was
-   previously the "rest of the sentence" treatment contrasted against an
-   interactive, full-strength, accent-coloured word 0; now applies
-   uniformly since there's no longer a distinct word to contrast against.
-   --desire-fg (Ink on Parchment / Parchment on Deep Teal, see the HERO ->
-   DESIRE TRANSITION block above) carries the hue; --desire-fg-opacity is
-   the recede amount. */
+/* Every word sits at a slightly receded opacity, "a remembered thought"
+   rather than shouting. REWORKED 2026-09-23: was --desire-fg/
+   --desire-fg-opacity (ink-on-light, the old flat parchment/deep-teal
+   field toggle) — ground is now a dark scrim over video, so this is
+   parchment directly, same convention as the rest of the overlay copy
+   (.desire__jar-id, .desire above). Opacity value (0.85) is higher than
+   the old --desire-fg-opacity (0.72) — text over moving video/a gradient
+   scrim needs more contrast margin than text over a flat, calm field;
+   worth Nilesh's own eye once he's seen it live, easy to retune. */
 .desire__line .word > span {
-  color: var(--desire-fg);
-  opacity: var(--desire-fg-opacity);
+  color: var(--color-parchment);
+  opacity: 0.85;
   letter-spacing: 0.005em;
 }
 
-/* Shuffle affordance — a small, quiet discovery, not a control
-   competing for attention. Always active now (no earned-reveal
-   mechanic on the CTA anymore) — this button itself was never part of
-   that mechanic, unchanged from the previous round. Plain CSS hover/
-   press feedback only (opacity, no motion) — the reel itself is GSAP. */
-.desire__shuffle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  margin-left: -0.4rem; /* optically align the icon's glyph, not the hit target's box */
-  opacity: 0.4;
-  transition: opacity 0.25s ease;
-}
-.desire__shuffle svg { width: 18px; height: 18px; }
-.desire__shuffle:hover,
-.desire__shuffle:focus-visible { opacity: 0.7; }
-.desire__shuffle:active { opacity: 0.9; }
+/* .desire__shuffle — REMOVED 2026-09-23, not just hidden. The manual
+   dice-icon advance button doesn't have a role once statement changes
+   are scroll-position-locked (see index.html's comment on this
+   section) — flagged as a call made this round. */
 
 .desire__actions { display: flex; }
 
@@ -649,7 +552,10 @@
    times," Nilesh). Uses .btn--on-dark's custom-property mechanism with
    Variant F's values from button-library.html (Clay face / Parchment
    text / Olive+Rose stripe) — see the index.html comment for why this
-   specific variant, not another, given this section's light ground.
+   specific variant, not another. Originally picked for a light/parchment
+   ground; REWORKED 2026-09-23's dark-video ground actually gives Clay
+   MORE contrast to work with, not less — untouched, but worth Nilesh's
+   own live check now that the ground behind it has changed.
 
    flex-shrink: 0 + white-space: nowrap carried over unchanged from the
    previous round — still load-bearing for the same reason (a flex
@@ -678,11 +584,22 @@
    Composition, deliberately DIFFERENT from both neighbours so the
    homepage doesn't repeat a formula three times running (CLAUDE.md §11
    — "vary section rhythm... not a repeating pattern"): Hero is full-
-   bleed video with overlaid bottom text; Desire is a single centered
-   column with no video; this section is a contained (not full-bleed)
-   video sitting asymmetrically beside a copy column — editorial, "the
+   bleed video with overlaid bottom text; this section is a CONTAINED
+   (not full-bleed) video sitting beside a copy column — editorial, "the
    jar is present, not presented" per the brief, not a cinematic
    backdrop.
+   STALE NOTE, corrected 2026-09-23: this paragraph used to say "Desire
+   is a single centered column with no video" — no longer true. Desire
+   was reworked 2026-09-23 (Nilesh's direct brief) into ALSO a full-bleed
+   scroll-scrubbed video, converging its composition toward Hero's rather
+   than away from it — see .desire's own comment above in this file. That
+   makes this section (3) the one genuinely differentiated composition on
+   the page now (contained video + copy column, vs. two full-bleed video
+   sections) — flagged, not silently left implying a three-way variety
+   that isn't there anymore. Nilesh's explicit instruction overrides the
+   prior build-time "vary rhythm" call, same pattern as earlier direct-
+   instruction overrides in this file's history (see .desire's own past
+   comments) — not something this build decided on its own.
 
    Motion model: `.understanding` is pinned (GSAP ScrollTrigger,
    initUnderstandingScrub() in main.js) for a multi-viewport scroll

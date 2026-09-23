@@ -209,7 +209,12 @@ function initHeroDesireTransition() {
   // required elements above. Tweened on this SAME timeline (below), not a
   // second scrollTrigger, so it resolves into focus in exact lockstep with
   // the video's own dissolve/blur — never a separately-timed animation.
-  const jarMedia = document.querySelector('.desire__jar-media');
+  // RETARGETED 2026-09-23: was `.desire__jar-media` (a small still-image
+  // wrapper), now `.desire__media` (the full-bleed video wrapper) — same
+  // resolve-into-focus behaviour, new element, since Section 2's static
+  // jar was replaced by a scroll-scrubbed video this round (see
+  // css/home.css and initDesireBeat() below).
+  const jarMedia = document.querySelector('.desire__media');
   const jarId = document.querySelector('.desire__jar-id');
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -276,60 +281,96 @@ function initHeroDesireTransition() {
 }
 
 /*
-  Desire beat — homepage section 2 (feel/bugfix round, 2026-09-12 round
-  4). See index.html/home.css for the full context. The rising-mask
-  "reel" mechanic, the two-layer overlap approach, and the scramble
-  ORDER system (buildFiringOrder/isTooSequential, below — unchanged,
-  still correct per Nilesh) all carry over untouched. This round reworks
-  only: (a) how much TIME sits between each firing-order beat — no
-  longer a fixed step, see buildBeatTimes() — and (b) the easing/
-  duration of each word's own rise. It also drops the wrap's height-
-  tween entirely, now that css/home.css locks that height — see this
-  file's shuffle() and that file's .desire__line-wrap comment for why
-  the tween itself was the real cause of the CTA moving every shuffle,
-  not a separate bug needing a separate fix.
+  Desire beat — homepage section 2. REWORKED 2026-09-23 (Nilesh's direct
+  brief): the static centred jar-image composition is gone — Section 2 is
+  now a full-bleed scroll-scrubbed video (same mechanism as Section 3's
+  initUnderstandingScrub(), applied here as the section's actual ground),
+  with the 5 existing Hinglish statements' rising-mask "reel" transition
+  now driven by scroll position instead of a 3s auto-timer/manual click.
 
-  IRREGULAR TIMING (this round's core change): round 3 assigned each
-  firing-order position a delay of `position * BASE_STAGGER + small
-  jitter` — a fixed step size with only minor wobble. Nilesh's read,
-  correct: even with the WORD ORDER scrambled, evenly-spaced beats still
-  read as a sequence, because the ear/eye tracks rhythm independently of
-  content. buildBeatTimes() replaces the fixed step with genuinely
-  irregular gaps: each of the (maxCount-1) gaps between beats gets an
-  independently randomized raw weight across a wide range
-  (GAP_WEIGHT_MIN..GAP_WEIGHT_MAX, a 6x spread), THEN all weights are
-  scaled so they sum to exactly BEAT_SPAN — this is what keeps the ~1s-
-  ish overall bound exact every time regardless of word count, while the
-  RELATIVE spacing between individual beats stays irregular (some gaps
-  end up small — two words firing almost back-to-back — others large).
-  Freshly generated every shuffle, same as the order itself.
+  WHAT CARRIES OVER UNCHANGED from the pre-rework version: the rising-
+  mask reel mechanic itself (buildLine/appendWordContent, the per-word
+  yPercent choreography), the scramble ORDER system (buildFiringOrder/
+  isTooSequential), the irregular per-beat timing (buildBeatTimes), the
+  Elizeth broken-glyph fallback, and RISE_DUR/ENTRY_OFFSET's easing. None
+  of that motion language changes — only WHAT TRIGGERS one transition to
+  play, and what decides which statement is next.
 
-  OVERLAP-BUG FIX from round 3 (ENTRY_OFFSET: entry starts slightly
-  after its paired exit, not simultaneously) is unchanged in mechanism,
-  just retuned slightly alongside the slower rise below.
+  WHAT'S NEW this round:
+  1. `.desire` pins (GSAP ScrollTrigger, same portable pin:true+scrub:true
+     pattern as initUnderstandingScrub() — native browser scroll via
+     transform, not a wheel/touch-intercepting hijack) for a multi-
+     viewport scroll distance, split into 5 equal zones (one per
+     statement, STATEMENTS.length zones).
+  2. The video's currentTime is a direct linear function of the pin's
+     overall progress (0..1) — continuous, every scroll tick.
+  3. The statement transition is a DISCRETE trigger: every scroll tick,
+     the current zone index is computed from that same progress; the
+     moment it differs from the currently-displayed statement, the exact
+     same reel-transition tween plays, targeting the new zone's
+     statement — "retriggered by scroll instead of a timer," not a
+     continuously-scrubbed word interpolation (a taste call made
+     explicitly this round — see gaps.md for why: the irregular per-word
+     timing model isn't built for continuous scrubbing, and this keeps
+     the section on the same proven pattern as Section 3). Works
+     scrolling forward OR backward — same trigger check runs either way,
+     it only cares whether the target zone differs from what's showing.
+  4. The manual shuffle button (dice icon) is removed — see index.html's
+     comment on this section for why.
 
-  GRANDPARENT ANCHOR — REMOVED 2026-09-14 (Nilesh, this round): the
-  tappable word-0 name-cycling feature (Nani -> Dadi -> Nana -> Dada),
-  its persistence-across-shuffles behaviour, and the typographic
-  differentiation built for it are gone outright, not disabled — see
-  build-log.md Session 40 for the full removal and gaps.md for the
-  now-resolved gendered-conjugation limitation that only existed because
-  of this feature. Word 0 is a plain word again, same as every other
-  word in the line, rendered from the statement's own text — no special
-  case in buildLine() below anymore. Incidental effect: this also fixes
-  the "auto-shuffle doesn't seem to cycle" report — auto-shuffle itself
-  was never broken (confirmed firing every ~5s via direct testing before
-  this change — the interval was 5000ms at the time; changed to 3000ms
-  2026-09-15, see AUTO_INTERVAL_MS below), but the anchor's persistence
-  meant the single most visually prominent word (bold/coloured) never
-  changed across a shuffle, which read as "nothing is happening" at a
-  glance even though the rest of the line was advancing correctly
-  underneath it.
+  VIDEO SOURCE — DESIRE_SCRUB_SOURCES / DESIRE_ACTIVE_SOURCE below is the
+  ONE-LINE SWAP Nilesh asked for (spec-discovery experiment, item 4 of
+  this round's brief): the original mock clip plus 3 ffmpeg-re-encoded
+  variants, built specifically to A/B scrub smoothness on phone and
+  desktop. Exact specs of each (probed/measured directly, not assumed):
+
+    original       assets/video/Scroll_scrub_try2.mp4
+                    1280x720, 8.0s, 24fps/192 frames, H.264, 3 keyframes
+                    total for the whole clip, 2.78MB (~2.8Mbps).
+                    NOTE: this is DIFFERENT from what an earlier session's
+                    comment (Section 3, initUnderstandingScrub()) recorded
+                    for this same filename (640x360, single keyframe) —
+                    the file on disk was replaced/re-exported by Nilesh
+                    between sessions (confirmed: current mtime is newer
+                    than that comment). These specs are freshly re-probed
+                    this round, not copied from the stale comment.
+
+    allintra720     assets/video/try2_allintra_720.mp4
+                    1280x720 (native res, untouched), every-frame-keyframe
+                    (ffmpeg -g 1 -keyint_min 1 -sc_threshold 0, CRF 20),
+                    6.08MB (~6.1Mbps). The "best possible scrub" variant —
+                    largest file, should stutter least.
+
+    kf5_720         assets/video/try2_kf5_720.mp4
+                    1280x720, keyframe every 5 frames (-g 5), CRF 20,
+                    3.08MB (~3.1Mbps). Middle ground — much better
+                    keyframe density than the original's 3-for-the-whole-
+                    clip, roughly half allintra720's file size.
+
+    allintra360     assets/video/try2_allintra_360.mp4
+                    640x360 (downscaled), every-frame-keyframe, CRF 20,
+                    2.11MB (~2.1Mbps). Tests whether a smaller frame
+                    (less to decode per seek) matters as much as keyframe
+                    density for scrub smoothness, particularly on phone.
+
+  Flip DESIRE_ACTIVE_SOURCE's value to switch live — nothing else in this
+  function needs to change. Whichever one feels smooth on real devices is
+  the spec to brief the FINAL footage's export at (resolution + keyframe
+  interval), not necessarily any of these four exactly.
 */
 function initDesireBeat() {
+  const section = document.getElementById('desireSection');
+  const video = document.getElementById('desireVideo');
   const wrap = document.getElementById('desireLineWrap');
-  const shuffleBtn = document.getElementById('desireShuffle');
-  if (!wrap || !shuffleBtn) return;
+  if (!section || !video || !wrap) return;
+
+  const DESIRE_SCRUB_SOURCES = {
+    original: 'assets/video/Scroll_scrub_try2.mp4',
+    allintra720: 'assets/video/try2_allintra_720.mp4',
+    kf5_720: 'assets/video/try2_kf5_720.mp4',
+    allintra360: 'assets/video/try2_allintra_360.mp4',
+  };
+  const DESIRE_ACTIVE_SOURCE = 'allintra720'; // <-- ONE-LINE SWAP: 'original' | 'allintra720' | 'kf5_720' | 'allintra360' | a real asset path once one exists
 
   // Real (proofing-pending) Hinglish statements — given directly by
   // Nilesh 2026-09-13, verbatim, in this exact order (not a build-time
@@ -345,7 +386,6 @@ function initDesireBeat() {
     'Dadi ki baat ab sense bana rahi hai',
     'Dada toh kehte hi the!',
   ];
-  const AUTO_INTERVAL_MS = 3000; // 3s auto-shuffle, changed from 5s 2026-09-15 (Nilesh). Manual shuffleBtn click still works unchanged — both paths share resetTimer().
   // BEAT_SPAN: total budget (s) for the irregular gaps between firing-
   // order beats — see buildBeatTimes() below. GAP_WEIGHT_MIN/MAX set the
   // spread of raw randomness BEFORE it's scaled to fit that budget; a
@@ -369,7 +409,6 @@ function initDesireBeat() {
 
   let index = 0;
   let animating = false;
-  let timer = null;
 
   // Elizeth's Trial .otf is missing glyphs for these — confirmed by
   // direct isolated test 2026-09-13 while checking an unrelated
@@ -482,9 +521,15 @@ function initDesireBeat() {
     return times;
   }
 
-  function shuffle() {
-    if (animating) return;
-    index = (index + 1) % STATEMENTS.length;
+  // transitionTo() — the exact same reel tween shuffle() used to build,
+  // now taking an explicit target index instead of always "next" — the
+  // scroll-driven trigger below decides which statement is next, this
+  // just plays the same rising-mask transition to reach it. Unchanged:
+  // firing-order scramble, irregular beat timing, ENTRY_OFFSET, RISE_DUR,
+  // easing.
+  function transitionTo(nextIndex) {
+    if (animating || nextIndex === index) return;
+    index = nextIndex;
     const nextText = STATEMENTS[index];
     const currentLine = wrap.querySelector('.desire__line');
     if (!currentLine) return;
@@ -502,14 +547,9 @@ function initDesireBeat() {
     const newWords = incoming.querySelectorAll('.word > span');
     gsap.set(newWords, { yPercent: 110 });
 
-    // No wrap-height measurement/tween anymore — #desireLineWrap's
-    // height is fixed in CSS (css/home.css) to fit the tallest 2-line
-    // case, so the CTA below never moves between shuffles. That height
-    // tween (removed here, not disabled) was the actual cause of the
-    // CTA visibly shifting every shuffle, not a separate layout bug.
     const maxCount = Math.max(oldWords.length, newWords.length);
-    const firingOrder = buildFiringOrder(maxCount); // fresh every shuffle — see file note
-    const beatTimes = buildBeatTimes(maxCount);     // fresh, irregular gaps — see file note
+    const firingOrder = buildFiringOrder(maxCount); // fresh every transition
+    const beatTimes = buildBeatTimes(maxCount);     // fresh, irregular gaps
     const orderPosition = new Array(maxCount);
     firingOrder.forEach((slot, pos) => { orderPosition[slot] = pos; });
 
@@ -522,11 +562,6 @@ function initDesireBeat() {
     });
 
     for (let i = 0; i < maxCount; i++) {
-      // Both words at this slot share the same firing-order beat — still
-      // coupled, per the brief — but entry starts ENTRY_OFFSET later
-      // than exit (overlap fix, round 3), not at the exact same instant.
-      // sine easing (softened from round 3's power2/power3) for a
-      // gentler, more considered rise, per Nilesh — "err slower."
       const beat = beatTimes[orderPosition[i]];
       if (oldWords[i]) {
         tl.to(oldWords[i], { yPercent: -120, duration: RISE_DUR, ease: 'sine.in' }, beat);
@@ -537,87 +572,87 @@ function initDesireBeat() {
     }
   }
 
-  function resetTimer() {
-    if (timer) clearInterval(timer);
-    timer = setInterval(shuffle, AUTO_INTERVAL_MS);
+  if (reduced) {
+    // Same policy as initUnderstandingScrub()/initHeroVideo(): no pin, no
+    // scrub, nothing scroll-tied. Section unpins to normal flow height
+    // (.desire--static, css/home.css); video stays on its first loaded
+    // frame ("shows a static frame," per the brief) — no autoplay, no
+    // currentTime writes. Only the FIRST statement is ever shown, fully
+    // readable, no reel animation ever plays.
+    section.classList.add('desire--static');
+    video.src = DESIRE_SCRUB_SOURCES[DESIRE_ACTIVE_SOURCE] || DESIRE_ACTIVE_SOURCE;
+    return;
   }
 
-  shuffleBtn.addEventListener('click', () => {
-    shuffle();
-    resetTimer();
+  // Eager small-metadata load: unlike Section 3 (deliberately lazy —
+  // it's deep in the scroll), Desire is the second section on the page,
+  // and its opacity/blur resolve tween (initHeroDesireTransition(),
+  // above in this file) starts firing while the visitor is still
+  // scrolling THROUGH the hero, i.e. before Desire's own lazy-load
+  // IntersectionObserver would realistically have fired. Setting src
+  // directly here, with preload="metadata" in the markup (not "auto"),
+  // keeps the initial page load light while avoiding that race.
+  video.src = DESIRE_SCRUB_SOURCES[DESIRE_ACTIVE_SOURCE] || DESIRE_ACTIVE_SOURCE;
+  video.load();
+
+  let duration = 0;
+  let primed = false;
+  video.addEventListener('loadedmetadata', () => {
+    duration = video.duration || 0;
+    // Same iOS Safari seek-priming as initUnderstandingScrub() — a video
+    // that's never played won't reliably seek on some mobile browsers.
+    if (!primed) {
+      primed = true;
+      video.play().then(() => video.pause()).catch(() => {});
+    }
   });
 
-  // First-arrival settle beat — SHORTENED + RETARGETED 2026-09-15
-  // (Nilesh: captions should be shuffling by the time they enter view,
-  // catching the eye during the scroll, not after it stops). Two
-  // changes from the prior version:
-  // (1) Arming now comes directly from the captions' OWN visibility —
-  // the IntersectionObserver below, retargeted to `wrap` with
-  // threshold:0 — instead of the unrelated 'ckc:heroDissolveSettled'
-  // hero-scroll event. That event is still dispatched by
-  // initHeroDesireTransition() (untouched, out of scope this round) but
-  // no longer consumed here.
-  // (2) SETTLE_MS trimmed 1100 -> 300, and armFirstShuffle()'s timeout
-  // now calls shuffle() directly instead of only resetTimer() — the
-  // FIRST shuffle no longer waits a full extra AUTO_INTERVAL_MS on top
-  // of the settle delay. resetTimer() right after just starts the
-  // RECURRING 3s cadence for every shuffle after that first one.
-  // Net effect: first shuffle now lands ~300ms after the captions
-  // become visible, not ~4.1s after an unrelated scroll event.
-  const SETTLE_MS = 300;
-  let firstArmed = false;
-  let settleTimeoutId = null;
+  const canFastSeek = typeof video.fastSeek === 'function';
+  let lastTarget = -1;
 
-  function armFirstShuffle() {
-    if (firstArmed) return;
-    firstArmed = true;
-    settleTimeoutId = setTimeout(() => {
-      settleTimeoutId = null;
-      shuffle();
-      resetTimer();
-    }, SETTLE_MS);
+  function updateVideo(progress) {
+    if (!duration) return;
+    const target = progress * duration;
+    if (Math.abs(target - lastTarget) < 1 / 60) return;
+    lastTarget = target;
+    try {
+      if (canFastSeek) video.fastSeek(target);
+      else video.currentTime = target;
+    } catch (e) {
+      // Safe to ignore — not yet seekable, next scroll tick retries.
+    }
   }
 
-  // Bug found and fixed while verifying auto-shuffle timing (2026-09-14,
-  // Session 40) — not shipped silently, unchanged this round: leaving
-  // the section during the settle window used to leak a background
-  // timer, because the settleTimeoutId cleanup was nested inside a
-  // `timer` check that isn't true yet during that window. Fix (splitting
-  // the two cleanups so the settle-timeout one is unconditional on
-  // leaving) still applies below.
-  //
-  // firstArmed still only ever gets set once (never reset back to
-  // false) — only the very first arrival gets this beat, scrolling away
-  // and back later just resumes normally (immediate resetTimer() below)
-  // — that's the established Session 38 design intent, not revisited
-  // this round.
-  //
-  // RETARGETED 2026-09-15: observes `wrap` (the captions themselves),
-  // not `.desire` (the whole section — much taller now, with the bigger
-  // jar above it) — and threshold 0, not 0.25 — so both the arming
-  // (isIntersecting -> armFirstShuffle()) and the resume-on-return
-  // (isIntersecting -> resetTimer()) fire the instant any part of the
-  // captions is on screen, per Nilesh's explicit "as soon as they enter
-  // the viewport, even partially" instruction — not once a quarter of a
-  // much taller section has scrolled past.
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        if (firstArmed) resetTimer();
-        else armFirstShuffle();
-      } else {
-        if (timer) {
-          clearInterval(timer);
-          timer = null;
-        }
-        if (settleTimeoutId) {
-          clearTimeout(settleTimeoutId);
-          settleTimeoutId = null;
-        }
-      }
-    });
-  }, { threshold: 0 });
-  io.observe(wrap);
+  // Copy zone: 5 equal zones across the pin's 0..1 progress, one per
+  // statement — deliberately uniform (unlike Section 3's weighted
+  // STATE_WEIGHTS), since the brief here doesn't call for differential
+  // dwell time per statement. currentZone() finds which zone a given
+  // progress falls in; the ScrollTrigger below only calls transitionTo()
+  // when that zone actually CHANGES from what's currently shown, which
+  // is what makes this a discrete, threshold-triggered swap rather than
+  // a continuous scrub, even though it's read from a continuous value.
+  const zoneCount = STATEMENTS.length;
+  function currentZone(progress) {
+    return Math.min(zoneCount - 1, Math.floor(progress * zoneCount));
+  }
+
+  // SEGMENT_VH: scroll distance (vh) per statement zone — raise/lower to
+  // slow/speed the whole pin uniformly. Same tunable-constant pattern as
+  // Section 3's SEGMENT_VH; not a spec-frozen value, adjust freely.
+  const SEGMENT_VH = 85;
+
+  ScrollTrigger.create({
+    trigger: section,
+    start: 'top top',
+    end: () => '+=' + Math.round((window.innerHeight * SEGMENT_VH * zoneCount) / 100),
+    pin: true,
+    scrub: true,
+    onUpdate: (self) => {
+      updateVideo(self.progress);
+      const zone = currentZone(self.progress);
+      if (zone !== index) transitionTo(zone);
+    },
+  });
 }
 
 /*
