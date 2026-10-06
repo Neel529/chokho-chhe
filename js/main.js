@@ -76,7 +76,7 @@ function initHeroVideo() {
   const video = document.querySelector('.hero__video');
   if (!video) return;
 
-  // Guard stays even now that a (mock) <source> exists, 2026-09-10 — still
+  // Guard stays even now that a (provisional) <source> exists — still
   // correct no-op if a future edit strips it back out. Checked via
   // <source>, not a src attribute (see index.html comment).
   if (!video.querySelector('source')) return;

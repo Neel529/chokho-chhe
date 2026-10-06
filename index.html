@@ -184,22 +184,30 @@
   <section class="hero" data-header-theme="dark">
     <div class="hero__media">
       <!--
-        MOCK FOOTAGE, NOT FINAL — 2026-09-10. assets/video/mock_video.mp4 is
-        a 17s placeholder Nilesh dropped in purely to judge look/feel (copy
-        legibility, crop, pacing) over real moving footage. It is NOT the
-        10–12s manufacturing/BTS video the spec calls for (see gaps.md —
-        that gap is still open). Swap this <source> for real footage when
-        it exists; nothing else here should need to change. No per-
-        breakpoint crop yet — same file both sides, e.g. later:
-          <source src="assets/video/hero-desktop.mp4" media="(min-width: 768px)" type="video/mp4">
-          <source src="assets/video/hero-mobile.mp4" type="video/mp4">
+        PROVISIONAL FOOTAGE, NOT FINAL — 2026-10-06. Real manufacturing
+        footage from Nilesh, swapped in to see it in action, but the source
+        is low quality and this is NOT the final hero cut (the spec's
+        10–12s manufacturing/BTS video — see gaps.md).
+        Trimmed 2026-10-06 to 0.7s -> 9.467s of the original (8.77s, both
+        ends on existing shot cuts). Two web copies, both encoded with
+        ffmpeg directly from the untouched original
+        assets/video/Video Project 11.mp4 (1920x1080, 25.6s, ~61 MB) — not
+        from the earlier copies — no audio, faststart:
+          >900px wide: hero_provisional_1080_trim.mp4 (1920x1080, ~10 Mbps, ~10.9 MB)
+          otherwise:   hero_provisional_720_trim.mp4  (1280x720,  ~4 Mbps,  ~4.3 MB)
+        The untrimmed hero_provisional_1080.mp4 / _720.mp4 stay on disk,
+        unused, for comparison.
+        Picked by <source media> (2026-10-06), so it's checked once at page
+        load; resizing across 900px afterwards doesn't swap files. Same
+        footage and crop both sides — only resolution differs. Replaces the
+        earlier mock_video.mp4 placeholder.
         Playback (muted/autoplay handling, in-view pause/resume, reduced-
         motion) is driven by initHeroVideo() in main.js — unchanged by this
-        drop-in, it was already built to activate the moment a real
-        <source> shows up. See that function's comment.
+        swap. See that function's comment.
       -->
       <video class="hero__video" muted loop playsinline aria-hidden="true">
-        <source src="assets/video/mock_video.mp4" type="video/mp4">
+        <source src="assets/video/hero_provisional_1080_trim.mp4" media="(min-width: 901px)" type="video/mp4">
+        <source src="assets/video/hero_provisional_720_trim.mp4" type="video/mp4">
       </video>
       <!-- Hero -> Desire dissolve, 2026-09-13 — see the big comment in
            css/home.css and initHeroDesireTransition() (main.js) for the
@@ -212,12 +220,10 @@
            same day, not left disabled — see build-log.md Session 42. -->
       <div class="hero__dissolve" aria-hidden="true"></div>
       <p class="hero__media-label is-placeholder is-placeholder--block">
-        Mock footage for testing look &amp; feel only — not final. Real
-        10–12s manufacturing / BTS video not yet shot (see gaps.md). Shown
-        only if the mock clip can't play (reduced motion / autoplay
-        blocked); once it's playing, the corner tag below is the marker.
+        Provisional footage — not final. Final 10–12s manufacturing / BTS
+        hero cut not yet made (see gaps.md). Shown only if the clip can't
+        play (reduced motion / autoplay blocked).
       </p>
-      <span class="hero__mock-badge is-placeholder">Mock footage — not final</span>
     </div>
     <div class="hero__content">
       <!-- Finalized section-one copy (Nilesh, 2026-09-08), replacing the

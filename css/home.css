@@ -79,28 +79,6 @@
   max-width: 22em;
   line-height: 1.6;
 }
-/* Persistent corner tag for the mock hero footage (2026-09-10) — stays up
-   the whole time the mock clip plays, unlike .hero__media-label above
-   (which only shows if the video never starts). Sits below the fixed
-   header strip so it never overlaps the trigger/cart icons, and away
-   from .hero__content (bottom-weighted) so it never sits over the copy
-   this drop-in exists to test the legibility of. Delete this element
-   when real footage replaces the mock <source> — it is not meant to
-   survive that swap. */
-.hero__mock-badge {
-  position: absolute;
-  top: calc(var(--header-height-mobile) + var(--space-3));
-  right: var(--space-4);
-  z-index: 2;
-  font-size: 0.625rem;
-}
-@media (min-width: 768px) {
-  .hero__mock-badge {
-    top: calc(var(--header-height) + var(--space-3));
-    right: var(--space-6);
-  }
-}
-
 .hero__content {
   position: relative;
   z-index: 1;
