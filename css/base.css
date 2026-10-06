@@ -71,6 +71,22 @@ h1, h2, h3 { font-family: var(--font-heading); font-weight: 500; }
   width: 100%;
 }
 
+/* Long placeholder notes ("Copy not yet written. Scope: …", "imagery —
+   not shot yet …") are internal working notes. On the public site
+   (2026-10-06, Nilesh) their TEXT is hidden but the dashed box and the
+   PLACEHOLDER chip stay, so the spot is still visibly marked and layout
+   doesn't shift. Shown in full when main.js tags <html> with
+   .is-local-dev (localhost / file://). Short FAQ answers ("Answer not
+   yet written.") are left as-is. text-fill (not `color`) is what's made
+   transparent, because the dashed border is drawn from currentColor. */
+html:not(.is-local-dev) .is-placeholder--block:not(.shop__faq-answer) {
+  -webkit-text-fill-color: transparent;
+  user-select: none;
+}
+html:not(.is-local-dev) .is-placeholder--block:not(.shop__faq-answer)::after {
+  -webkit-text-fill-color: currentColor;
+}
+
 /* Generic CTA button — complete redesign (Nilesh, 2026-09-07). The prior
    hand-drawn border/underline/ink-wash system (Session 20) is REMOVED
    entirely, not layered under this — none of it landed. Two elements:
