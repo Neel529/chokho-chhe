@@ -44,3 +44,17 @@ assets/video/
 *credentials*
 *secret*
 *token*.json
+
+# Fonts — only the files the site actually loads are committed. Fonts are
+# licensed separately and must not be redistributed; the rest stay local.
+assets/svg/GeneralSans_Complete/Fonts/OTF/
+assets/svg/GeneralSans_Complete/Fonts/TTF/
+assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/*
+!assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Regular.woff2
+!assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Regular.woff
+!assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Medium.woff2
+!assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Medium.woff
+!assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Semibold.woff2
+!assets/svg/GeneralSans_Complete/Fonts/WEB/fonts/GeneralSans-Semibold.woff
+assets/svg/Elizeth/*
+!assets/svg/Elizeth/ElizethTrial-Medium.otf
