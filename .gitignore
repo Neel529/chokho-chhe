@@ -29,3 +29,18 @@ build-log.md
 cta-variants.html
 button-library.html
 CKC_hindi_to_english_load_transition.html
+
+# Video — never committed. Shared privately by Nilesh; see README "Video files".
+assets/video/
+*.mp4
+*.mov
+*.webm
+
+# Secrets / credentials — none exist today; safety net
+.env
+.env.*
+*.pem
+*.key
+*credentials*
+*secret*
+*token*.json
