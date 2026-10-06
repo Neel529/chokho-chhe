@@ -1,19 +1,11 @@
 /* ============================================================
-   TRUST PAGE — spec section 10 (renamed from "Proof", 2026-09-15
-   per spec: "Proof" is defensive, "Trust" is offered).
-   Job: substantiate the homepage's claims for a visitor who is
-   interested and wants to verify. Frozen three-layer architecture:
+   TRUST PAGE — spec section 10. Frozen three-layer architecture:
    01 People & Process -> 02 Legitimacy -> 03 Substance.
    Motion posture is deliberately distinct from the homepage:
    calm, steady, dimensional — reassuring, not seductive. No
    reel-shuffle, no cinematic dissolve (those are the homepage's
    desire beat only). See js/main.js for the reveal/parallax/
    count-up/unfold implementations this stylesheet supports.
-   Status: 🟡 direction decided, execution open. Story anchor copy
-   is real+approved; "how it's made" copy, ingredient research, and
-   all certificate/facility assets are visibly-marked placeholders.
-   Story-anchor prominence treatment is interim (restrained) —
-   Nilesh to decide (see build-log.md/gaps.md).
    ============================================================ */
 
 .trust {

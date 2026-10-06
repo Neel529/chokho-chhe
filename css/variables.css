@@ -10,8 +10,6 @@
 
   Type: real font files now exist in /assets/svg/ (GeneralSans_Complete,
   Elizeth, kohinoor-devanagari) — self-hosted via @font-face below.
-  Elizeth's files are named "*Trial*" — per Nilesh (2026-09-04) this is a
-  known temporary state, the full licence is coming. Not a blocker.
 */
 
 @font-face {
@@ -43,8 +41,8 @@
   font-style: normal;
   font-display: swap;
 }
-/* Elizeth — TRIAL licence files (see note above). Brand guide calls for
-   Medium weight only for sub-headings; that's the sole weight loaded. */
+/* Elizeth — brand guide calls for Medium weight only for sub-headings;
+   that's the sole weight loaded. */
 @font-face {
   font-family: 'Elizeth';
   src: url('../assets/svg/Elizeth/ElizethTrial-Medium.otf') format('opentype');

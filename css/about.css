@@ -35,9 +35,7 @@
 
 /* Origin — approved copy, verbatim, moved here from Trust's People &
    Process. Same treatment as .trust__story-copy (body font, not
-   Elizeth — the Elizeth trial files are missing punctuation glyphs,
-   see gaps.md; running prose is General Sans anyway per the brand
-   system either way). */
+   Elizeth — running prose is General Sans per the brand system). */
 .about__story-copy {
   font-family: var(--font-body);
   font-size: clamp(1.15rem, 1rem + 0.7vw, 1.4rem);

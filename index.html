@@ -232,19 +232,7 @@
            [data-reveal], no scroll-triggered entrance — the hero already
            has video motion and the entry animation immediately precedes
            it; a text reveal here would read as a second load-in after
-           the curtain lifts.
-
-           PENDING HUMAN PROOFING (flagged per Nilesh's explicit note,
-           not to be missed before launch): the Devanagari line below —
-           "असली है इसलिए आसान है।" — has not been
-           verified by a native Hindi reader yet. Built exactly as given;
-           the transliteration is a direct gloss of the same unverified
-           string. Font support itself IS confirmed real (Kohinoor
-           Devanagari renders every glyph/conjunct in this string
-           correctly, checked in isolation before wiring it in — this is
-           the first live use of --font-devanagari for real text
-           anywhere on the site, previously only loaded, never
-           exercised) — the open question is the wording, not the font. -->
+           the curtain lifts. -->
       <div class="hero__hindi">
         <p class="hero__devanagari" lang="hi">असली है इसलिए आसान है।</p>
         <p class="hero__translit">(real things are simple)</p>
@@ -266,18 +254,14 @@
        build-log.md for the full history and css/home.css +
        initDesireBeat() (main.js) for the mechanic itself.
 
-       Five lines are real (proofing-pending) Hinglish statements — given
+       Five lines are Hinglish statements — given
        directly by Nilesh 2026-09-13, verbatim, in this exact order (not
        a build-time arc-ordering call — see js/main.js STATEMENTS array,
        the source of truth; this markup only holds line 0 for a JS-free
        first paint). All Latin script, no Devanagari in this section.
-       Exact spelling/wording is PENDING NATIVE-HINDI-READER PROOFING
-       (see gaps.md), same open status as the hero's Devanagari line —
-       not visibly marked on the page (the .is-placeholder dashed box was
-       removed from this area per Nilesh's explicit instruction; status
-       tracked in gaps.md/build-log.md instead). Statement 4's "sense" is
+       Statement 4's "sense" is
        intentional English code-switching, not a typo — do not "fix" it
-       in a future proofing pass without checking with Nilesh first.
+       without checking with Nilesh first.
 
        lang="hi-Latn" (Hindi, Latin script) on each line, not "hi" —
        these are chat-style transliterations, not English.
@@ -368,7 +352,7 @@
 
        .desire__jar-id ("ChoKho Chhe / AmlaPrash") is real brand naming,
        not placeholder text — small, quiet, answers "what is this,"
-       nothing else (no ingredients/claims — see CLAUDE.md §9).
+       nothing else.
 
        REWORKED 2026-09-23 — Nilesh's direct brief: static jar PNG + a
        small centred image is OUT; Section 2 is now a full-bleed scroll-

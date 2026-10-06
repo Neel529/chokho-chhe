@@ -156,8 +156,7 @@
 .shop__linkout:hover { opacity: 0.7; }
 .shop__linkout:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 
-/* ---- 4. Shipping & returns — refund policy is real/approved copy;
-   delivery timeframes are Nilesh's to write (placeholder) ---- */
+/* ---- 4. Shipping & returns ---- */
 .shop__shipping { max-width: 42rem; display: flex; flex-direction: column; gap: var(--space-4); line-height: 1.6; }
 
 /* ---- 5. FAQ — native <details>/<summary>, name="shop-faq" makes only one

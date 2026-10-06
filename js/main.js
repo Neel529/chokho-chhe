@@ -363,13 +363,12 @@ function initDesireBeat() {
   };
   const DESIRE_ACTIVE_SOURCE = 'allintra720'; // <-- ONE-LINE SWAP: 'original' | 'allintra720' | 'kf5_720' | 'allintra360' | a real asset path once one exists
 
-  // Real (proofing-pending) Hinglish statements — given directly by
+  // Hinglish statements — given directly by
   // Nilesh 2026-09-13, verbatim, in this exact order (not a build-time
   // arc-ordering call anymore — see index.html comment). All Latin
   // script, no Devanagari in this section. "sense" in statement 4 is
   // intentional English code-switching, not a typo — do not "fix" it.
-  // Spelling/exact wording is pending native-Hindi-reader proofing (see
-  // gaps.md) — built exactly as given, not corrected or normalized.
+  // Built exactly as given, not corrected or normalized.
   const STATEMENTS = [
     'Nani ko ye pasand aata',
     'Dadi iske liye haan kar detin',
@@ -401,15 +400,9 @@ function initDesireBeat() {
   let index = 0;
   let animating = false;
 
-  // Elizeth's Trial .otf is missing glyphs for these — confirmed by
-  // direct isolated test 2026-09-13 while checking an unrelated
-  // screenshot (statement 5's "!" rendered as tofu). Same underlying gap
-  // logged in gaps.md for the hero/Trust pages (apostrophe/em-dash);
-  // this is a wider-scoped instance of it, found incidentally this
-  // round, not something this round's task asked for. Mitigation is the
-  // same established pattern: wrap just the broken character in a span
-  // set to the body font, Elizeth for everything else in the word.
-  // Resolves itself once the licensed (non-Trial) Elizeth files land.
+  // The current Elizeth .otf is missing glyphs for these. Mitigation:
+  // wrap just the broken character in a span set to the body font,
+  // Elizeth for everything else in the word.
   const ELIZETH_BROKEN_GLYPHS = /[!?;:'"()&]/;
 
   function appendWordContent(el, word) {

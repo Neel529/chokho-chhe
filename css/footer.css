@@ -12,9 +12,6 @@
    other themed section, no new JS needed (header.js's
    initHeaderGroundTheme() already watches every [data-header-theme]
    element generically).
-   Legal links (Privacy/Terms/Shipping/Refund) added 2026-09-06 — real
-   labels, placeholder destinations; the pages themselves are built in
-   Shopify at translation, not here (see spec Section 8).
    ============================================================ */
 
 .site-footer {
@@ -66,9 +63,7 @@
 .site-footer .is-placeholder { color: var(--color-parchment); }
 .site-footer .is-placeholder::after { background: var(--color-ink); }
 
-/* ---- Legal links — added 2026-09-06. Real destinations don't exist yet
-   (the pages themselves are built in Shopify at translation, not here —
-   see the spec's Section 8 "Legal pages — decision" note), so this reuses
+/* ---- Footer links with no destination yet — this reuses
    the exact same dimmed/inert/"— coming soon" treatment already
    established for the Shop menu link before Shop existed
    (`[data-unavailable]`, header.css), generalised here rather than a new

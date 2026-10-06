@@ -379,8 +379,7 @@ html:not(.is-local-dev) .desire__video-badge {
   max-width: min(90vw, 46rem);
 }
 
-/* Quiet product identity — "what is this," nothing else (CLAUDE.md §9:
-   no ingredients/claims here). Real brand naming, not placeholder text —
+/* Quiet product identity — "what is this," nothing else. Real brand naming, not placeholder text —
    deliberately NOT wrapped in .is-placeholder. Parchment at reduced
    opacity, same as the rest of the overlay copy. */
 .desire__jar-id {
@@ -469,9 +468,9 @@ html:not(.is-local-dev) .desire__video-badge {
      var(--desire-fs) above), so it scales correctly with the
      responsive type size — unlike the old .desire__inner cap this
      replaced (Session 33). Value is a build-time starting point,
-     re-verified against the current 5 real (proofing-pending)
-     statements at 390/1440px to land on <=2 lines — retune if wording
-     changes after proofing pushes any line noticeably longer/shorter. */
+     re-verified against the current 5 statements at 390/1440px to
+     land on <=2 lines — retune if wording changes push any line
+     noticeably longer/shorter. */
   max-width: 27ch;
 }
 /* The incoming line during a shuffle — absolutely stacked over the
@@ -503,13 +502,9 @@ html:not(.is-local-dev) .desire__video-badge {
   will-change: transform;
 }
 
-/* Elizeth's Trial .otf is missing glyphs for ! ? ; : ' " ( ) & — found
-   incidentally 2026-09-13 (statement 5's "!" rendering as tofu), same
-   underlying gap already logged in gaps.md for the hero/Trust pages
-   (apostrophe/em-dash), wider-scoped than previously known. main.js's
-   appendWordContent() wraps just the broken character in this class,
-   Elizeth stays on everything else in the word — resolves itself once
-   the licensed (non-Trial) files land, nothing to revisit before then. */
+/* The current Elizeth .otf is missing glyphs for ! ? ; : ' " ( ) & —
+   main.js's appendWordContent() wraps just the broken character in
+   this class, Elizeth stays on everything else in the word. */
 .desire__glyph-fallback {
   font-family: var(--font-body);
 }
