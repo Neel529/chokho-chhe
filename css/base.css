@@ -70,6 +70,14 @@ h1, h2, h3 { font-family: var(--font-heading); font-weight: 500; }
   display: block;
   width: 100%;
 }
+/* Empty placeholder text boxes keep ~3.5 lines of height so the page
+   rhythm holds until real copy fills them. :where() keeps this at
+   single-class specificity, so an element's own sizing (e.g. the image
+   figures' aspect-ratio / min-height, in later stylesheets) still wins. */
+.is-placeholder--block:where(:empty) {
+  min-height: 5.25em; /* fallback: 3.5 × base line-height 1.5 */
+  min-height: 3.5lh;
+}
 
 /* Long placeholder notes ("Copy not yet written. Scope: …", "imagery —
    not shot yet …") are internal working notes. On the public site
