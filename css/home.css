@@ -79,6 +79,15 @@
   max-width: 22em;
   line-height: 1.6;
 }
+/* Dev-only markers — hidden on the public site (2026-10-06, Nilesh: they
+   read as internal notes). Shown only when js/main.js tags <html> with
+   .is-local-dev (localhost / file://). Hidden by default rather than
+   revealed by JS, so they never flash on the live site. */
+html:not(.is-local-dev) .hero__media-label,
+html:not(.is-local-dev) .desire__video-badge {
+  display: none !important;
+}
+
 .hero__content {
   position: relative;
   z-index: 1;

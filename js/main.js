@@ -7,6 +7,14 @@
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Dev-only markers (2026-10-06): the hero's video-fallback label and
+// Section 2's "Mock scrub clip" badge are internal notes, hidden on the
+// public site by css/home.css unless <html> carries .is-local-dev — set
+// here only when running locally (localhost / 127.0.0.1 / file://).
+if (['localhost', '127.0.0.1', '[::1]'].includes(location.hostname) || location.protocol === 'file:') {
+  document.documentElement.classList.add('is-local-dev');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initEntry();
   initHeader();
